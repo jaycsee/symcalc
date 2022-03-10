@@ -7,14 +7,15 @@ from sympy import *
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
 
+
 class NotationConstants(CalculatorPlugin):
     """Calculator plugin to expand _x to constants['x'], where the dictionary contains common physical constants"""
 
     def __init__(self, table: dict[str, Any] = None) -> None:
         """Initializes the plugin with the lookup table. Defaults to physical constants"""
         super().__init__(self.__class__.__name__, 50)
-        self.settings_name = "auto_constants"
-        self.settings_toggle = "ac"
+        self.settings_name = "notation_constants"
+        self.settings_toggle = "nc"
         self.table = (
             table
             if table is not None
@@ -57,8 +58,8 @@ class NotationExponent(CalculatorPlugin):
 
     def __init__(self) -> None:
         super().__init__(self.__class__.__name__, 30)
-        self.settings_name = "auto_exponent"
-        self.settings_toggle = "ae"
+        self.settings_name = "notation_exponent"
+        self.settings_toggle = "ne"
 
     def hook(self, calc: Calculator) -> None:
         """Sets the settings in the calculator to their default values"""
@@ -77,8 +78,8 @@ class NotationInterval(CalculatorPlugin):
 
     def __init__(self) -> None:
         super().__init__(self.__class__.__name__, 61)
-        self.settings_name = "auto_interval"
-        self.settings_toggle = "ai"
+        self.settings_name = "notation_interval"
+        self.settings_toggle = "ni"
 
     def hook(self, calc: Calculator) -> None:
         """Sets the settings in the calculator to their default values"""
@@ -116,8 +117,8 @@ class NotationMultiply(CalculatorPlugin):
 
     def __init__(self) -> None:
         super().__init__(self.__class__.__name__, 20)
-        self.settings_name = "auto_multiply"
-        self.settings_toggle = "am"
+        self.settings_name = "notation_multiply"
+        self.settings_toggle = "nm"
         self.command_allowed_symbols = set()
         self.ignored_types_not_last = set([type(sympy.Basic), sympy.core.function.FunctionClass, type(lambda x: x), type(sympify), type(type), type(sympy), sympy.printing.printer._PrintFunction])
 
@@ -178,8 +179,8 @@ class NotationVector(CalculatorPlugin):
 
     def __init__(self) -> None:
         super().__init__(self.__class__.__name__, 60)
-        self.settings_name = "auto_vector"
-        self.settings_toggle = "av"
+        self.settings_name = "notation_vector"
+        self.settings_toggle = "nv"
 
     def hook(self, calc: Calculator) -> None:
         """Sets the settings in the calculator to their default values"""

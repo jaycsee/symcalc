@@ -1,10 +1,12 @@
 from __future__ import annotations
 from typing import Any
 import re as regex
+import symtable
 
 from sympy import *
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
+
 
 class AutoExact(CalculatorPlugin):
     """Calculator plugin to convert numbers to their SymPy exact form"""
@@ -41,9 +43,6 @@ class AutoSymbol(CalculatorPlugin):
         calc.settings[self.settings_name + "_char"] = False
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
         calc.settings_toggle[calc.command_prefix + self.settings_toggle + "c"] = self.settings_name + "_char"
-
-    def handle_command(self, command: CalculatorCommand) -> None:
-        self.fails = set()
 
     def handle_runtime_error(self, command: CalculatorCommand, data: str) -> None:
         """Catch any NameErrors, and then direct the calculator to resend the command"""

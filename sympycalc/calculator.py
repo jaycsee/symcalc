@@ -16,6 +16,7 @@ class CalculatorContext:
 
     def __init__(self) -> None:
         """Initializes the default calculator context"""
+        self.__dict__["sympy"] = sympy
         self.__dict__.update(sympy.__dict__)
         self.plot_3d = plotting.plot3d
 
@@ -91,11 +92,11 @@ class Calculator:
         self.current_command.print_error = True
         self.current_command.success = False
         if data.split("\n")[-2].startswith("KeyboardInterrupt"):
+            self.current_command.resend_command = False
             return
-        for plugin in self.plugins:
-            plugin.handle_runtime_error(self.current_command, data)
-            if self.current_command.resend_command:
-                return
+        self.notify_plugins_runtime_error(self.current_command, data)
+        if self.current_command.abort or self.current_command.resend_command:
+            return
         if self.current_command.print_error:
             print(data, end="")
 
@@ -227,7 +228,7 @@ class Calculator:
             if command_data.success:
                 self.notify_plugins_success(command_data)
             else:
-                self.notify_plugins_success(command_data)
+                self.notify_plugins_fail(command_data)
             self.incomplete_command = None
             return True
         else:
