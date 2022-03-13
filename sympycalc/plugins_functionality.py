@@ -21,7 +21,7 @@ class AutoExact(CalculatorPlugin):
         calc.settings[self.settings_name] = True
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Use a regex to apply the substitution"""
         if not command.calc.settings[self.settings_name]:
             return
@@ -32,7 +32,7 @@ class AutoSymbol(CalculatorPlugin):
     """Calculator plugin to automatically assume that undefined variables are symbols"""
 
     def __init__(self) -> None:
-        super().__init__(self.__class__.__name__, 100)
+        super().__init__(self.__class__.__name__, 21)
         self.settings_name = "auto_symbol"
         self.settings_toggle = "as"
         self.fails = set()  # type: set[str]
@@ -44,15 +44,13 @@ class AutoSymbol(CalculatorPlugin):
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
         calc.settings_toggle[calc.command_prefix + self.settings_toggle + "c"] = self.settings_name + "_char"
 
-    def handle_runtime_error(self, command: CalculatorCommand, data: str) -> None:
-        """Catch any NameErrors, and then direct the calculator to resend the command"""
-        if command.calc.settings[self.settings_name] and data.split("\n")[-2].startswith("NameError: ") and data.split("\n")[-2].split("'")[1] != "_":
-            data = data.split("\n")[-2].split("'")[1]
-            if data not in self.fails:
-                self.fails.add(data)
+    def handle_command(self, command: CalculatorCommand) -> None:
+        if not command.calc.settings[self.settings_name]:
+            return
+        for s in command.command_symtable.get_symbols():
+            if not command.calc.chksym(s.get_name()) and not s.get_name().startswith("_"):
                 if command.calc.settings[self.settings_name + "_char"]:
-                    data = regex.sub(r",(\d)", r"\1", ",".join(list(data)))
-                command.calc.context.mksym(data)
-                command.resend_command = True
-                command.print_error = False
-                return
+                    command.calc.mksym(",".join(list(s.get_name())))
+                else:
+                    print(f"New symbol: {s.get_name()}")
+                    command.calc.mksym(s.get_name())

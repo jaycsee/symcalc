@@ -1,4 +1,5 @@
 from __future__ import annotations
+import ast
 from typing import Any
 import re as regex
 
@@ -10,6 +11,17 @@ from .plugin import CalculatorPlugin
 
 class NotationConstants(CalculatorPlugin):
     """Calculator plugin to expand _x to constants['x'], where the dictionary contains common physical constants"""
+
+    class CheckNames(ast.NodeTransformer):
+        """Checks the names of all the nodes in the ast to look for the target notation"""
+
+        def __init__(self, context: CalculatorContext) -> None:
+            self.context = context
+
+        def visit_Name(self, node: ast.Name) -> ast.AST | None:
+            if regex.match(r"_[a-zA-Z]\w*", node.id):
+                return ast.Subscript(value=ast.Name(id="constants", ctx=ast.Load()), slice=ast.Constant(value=node.id[1:]), ctx=ast.Load())
+            return node
 
     def __init__(self, table: dict[str, Any] = None) -> None:
         """Initializes the plugin with the lookup table. Defaults to physical constants"""
@@ -38,23 +50,23 @@ class NotationConstants(CalculatorPlugin):
                 "phi": (sympify("1") + sqrt(5)) / sympify("2"),  # Golden ratio
             }
         )
+        self.checker = None  # type: NotationConstants.CheckNames
 
     def hook(self, calc: Calculator) -> None:
         """Sets the settings in the calculator to their default values"""
         calc.settings[self.settings_name] = True
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
         calc.context.constants = self.table
+        self.checker = NotationConstants.CheckNames(calc.context)
 
     def handle_command(self, command: CalculatorCommand) -> str | None:
         """Applies the substitution"""
-        if not command.calc.settings[self.settings_name]:
-            return
-        # Use a regex to apply the substitution
-        command.command = regex.sub(r"(?<![a-zA-Z_\d])(_)([a-zA-Z0-9]+)", r"constants['\2']", command.command)
+        if command.calc.settings[self.settings_name]:
+            command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))
 
 
 class NotationExponent(CalculatorPlugin):
-    """Calculator plugin to expand _x to constants['x']"""
+    """Calculator plugin to change ^ to **, the Python syntax for powers"""
 
     def __init__(self) -> None:
         super().__init__(self.__class__.__name__, 30)
@@ -66,7 +78,7 @@ class NotationExponent(CalculatorPlugin):
         calc.settings[self.settings_name] = False
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Apply a simple substitution"""
         if not command.calc.settings[self.settings_name]:
             return
@@ -86,7 +98,7 @@ class NotationInterval(CalculatorPlugin):
         calc.settings[self.settings_name] = True
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Applies the interval expansion"""
         # Interval expansion
         while True:
@@ -115,12 +127,92 @@ class NotationInterval(CalculatorPlugin):
 class NotationMultiply(CalculatorPlugin):
     """Calculator plugin to allow for multiplication by juxtaposition with numbers, such as 2pi"""
 
+    class CheckResolutions(ast.NodeTransformer):
+        """Checks all of the resolutions of the ast to see there are better resolutions then leaving them unknown"""
+
+        def __init__(self, calc: Calculator) -> None:
+            self.calc = calc
+            self.ignored_types_not_last = set([type(sympy.Basic), sympy.core.function.FunctionClass, type(lambda x: x), type(sympify), type(type), type(sympy), sympy.printing.printer._PrintFunction])
+
+        def visit_Name(self, node: ast.Name) -> ast.AST | None:
+            if self.calc.chksym(node.id) or not isinstance(node.ctx, ast.Load):
+                return node
+            resolved = self.resolve(node.id)
+            if len(resolved) == 1:
+                return node
+            return ast.parse("*".join(resolved), filename="<NotationMultiply>", mode="eval").body
+
+        def visit_Call(self, node: ast.Call) -> ast.AST | None:
+            f = node.func
+            if type(f) == ast.Name:
+                resolved = self.resolve(f.id)
+                if len(resolved) == 1:
+                    return node
+                node.func = ast.Name(resolved[-1], ctx=ast.Load())
+                newargs = []
+                for n in node.args:
+                    newargs.append(self.visit(n))
+                node.args = [x for x in newargs if x]
+                return ast.BinOp(ast.parse("*".join(resolved[:-1]), filename="<NotationMultiply>", mode="eval").body, ast.Mult(), node)
+            return node
+
+        def resolve(self, data: str) -> list[str]:
+            original_data = data
+            end = len(data)
+            ret = []
+            while end > 0:
+                found = False
+                for i in range(end):
+                    if self.calc.chksym(data[i:end]):
+                        if (ret or end != len(data)) and self.calc.chksym(data[i:end]) and type(self.calc.getsym(data[i:end])) in self.ignored_types_not_last:
+                            return [original_data]
+                        if end != len(data):
+                            ret.append(data[end:])
+                        ret.append(data[i:end])
+                        end = i
+                        data = data[:i]
+                        found = True
+                if not found:
+                    if end == 1:
+                        ret.append(data)
+                        break
+                    end -= 1
+            ret.reverse()
+            return ret
+
+    class CheckCalls(ast.NodeTransformer):
+        """Checks the ast for using brackets to denote multiplication by juxtaposition"""
+
+        def __init__(self, calc: Calculator) -> None:
+            self.calc = calc
+
+        def visit_Call(self, node: ast.Call) -> ast.AST | None:
+            try:
+                self.visit(node)
+                if len(node.args) == 1 and isinstance(eval(ast.unparse(node.func), self.calc.context.__dict__, self.calc.context.__dict__), sympy.core.Expr):
+                    return ast.BinOp(node.func, ast.Mult(), node.args[0])
+            except Exception:
+                pass
+            return node
+
+    class NotationMultiplyHelper(CalculatorPlugin):
+        """Helper plugin for NotationMultiply"""
+
+        def __init__(self, settings_name: str, caller: NotationMultiply.CheckCalls) -> None:
+            super().__init__(self.__class__.__name__, 22)
+            self.settings_name = settings_name
+            self.caller = caller
+
+        def handle_command(self, command: CalculatorCommand) -> None:
+            """Check the ast for multiplication if two expressions are called"""
+            if command.calc.settings[self.settings_name] and command.calc.settings[self.settings_name + "_calls"]:
+                command.command_ast = ast.fix_missing_locations(self.caller.visit(command.command_ast))
+
     def __init__(self) -> None:
         super().__init__(self.__class__.__name__, 20)
         self.settings_name = "notation_multiply"
         self.settings_toggle = "nm"
-        self.command_allowed_symbols = set()
-        self.ignored_types_not_last = set([type(sympy.Basic), sympy.core.function.FunctionClass, type(lambda x: x), type(sympify), type(type), type(sympy), sympy.printing.printer._PrintFunction])
+        self.resolver = None  # type: NotationMultiply.CheckResolutions
 
     def hook(self, calc: Calculator) -> None:
         """Sets the settings in the calculator to their default values"""
@@ -130,48 +222,23 @@ class NotationMultiply(CalculatorPlugin):
         calc.settings_toggle[calc.command_prefix + self.settings_toggle + "n"] = self.settings_name + "_numbers"
         calc.settings[self.settings_name + "_objects"] = True
         calc.settings_toggle[calc.command_prefix + self.settings_toggle + "o"] = self.settings_name + "_objects"
+        calc.settings[self.settings_name + "_calls"] = True
+        calc.settings_toggle[calc.command_prefix + self.settings_toggle + "c"] = self.settings_name + "_calls"
+        self.resolver = NotationMultiply.CheckResolutions(calc)
+        self.caller = NotationMultiply.CheckCalls(calc)
+        self.helper = NotationMultiply.NotationMultiplyHelper(self.settings_name, self.caller)
+        calc.register_plugin(self.helper)
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Use a regex to apply the substitution"""
         if not command.calc.settings[self.settings_name]:
             return
-        command.command = regex.sub(r"(?<![a-zA-Z_])(\d)([a-zA-Z])", r"\1*\2", command.command)
-        self.command_allowed_symbols.clear()
+        command.command = regex.sub(r"(?<!\w)(\d+)([a-zA-Z])", r"\1*\2", command.command)
 
-    def handle_runtime_error(self, command: CalculatorCommand, data: str) -> None:
-        if command.calc.settings[self.settings_name] and command.calc.settings[self.settings_name + "_objects"] and data.split("\n")[-2].startswith("NameError: ") and data.split("\n")[-2].split("'")[1] != "_":
-            target = data.split("\n")[-2].split("'")[1]
-            if target in self.command_allowed_symbols:
-                return
-            data = target
-            definitions = command.calc.context.__dict__
-            defined = definitions.keys()
-            end = len(data)
-            resolved = []
-            while end > 0:
-                found = False
-                for i in range(end):
-                    if data[i:end] in defined:
-                        if (resolved or end != len(data)) and type(definitions[data[i:end]]) in self.ignored_types_not_last:
-                            continue
-                        if end != len(data):
-                            resolved.append(data[end:])
-                        resolved.append(data[i:end])
-                        end = i
-                        data = data[:i]
-                        found = True
-                if not found:
-                    if end == 1:
-                        resolved.append(data)
-                        break
-                    end -= 1
-            if len(resolved) == 1:
-                return
-            resolved.reverse()
-            for x in resolved:
-                self.command_allowed_symbols.add(x)
-            command.command = command.command.replace(target, "*".join(resolved))
-            command.resend_command = True
+    def handle_command(self, command: CalculatorCommand) -> None:
+        """Check the ast to see if there are better resolutions"""
+        if command.calc.settings[self.settings_name] and command.calc.settings[self.settings_name + "_objects"]:
+            command.command_ast = ast.fix_missing_locations(self.resolver.visit(command.command_ast))
 
 
 class NotationVector(CalculatorPlugin):
@@ -187,7 +254,7 @@ class NotationVector(CalculatorPlugin):
         calc.settings[self.settings_name] = True
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Applies the vector and matrix expansion"""
         # Vector expansion
         while True:

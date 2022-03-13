@@ -21,7 +21,7 @@ class CorrectNumbers(CalculatorPlugin):
         calc.settings[self.settings_name] = False
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Applies the substitution"""
         if not command.calc.settings[self.settings_name]:
             return
@@ -40,7 +40,7 @@ class CorrectStringEscape(CalculatorPlugin):
             super().__init__(self.__class__.__name__, 998)
             self.string_escapes = string_escapes
 
-        def handle_command(self, command: CalculatorCommand) -> None:
+        def parse_command(self, command: CalculatorCommand) -> None:
             """Set the strings back"""
             for i, c in enumerate(self.string_escapes):
                 command.command = command.command.replace(f"___{'{str' + str(i + 1) + '}'}___", "".join(c))
@@ -54,7 +54,7 @@ class CorrectStringEscape(CalculatorPlugin):
         self.helper = self.CorrectStringEscapeHelper(self.string_escapes)
         calc.register_plugin(self.helper)
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Escape the strings"""
         command_string_escaped = ""
         self.string_escapes.clear()
@@ -88,7 +88,7 @@ class CorrectStringEscape(CalculatorPlugin):
             else:
                 command_string_escaped += c
         if context is not None:
-            print("Unmatched quotes in string processing.")
+            print("Unmatched quotes in string processing. Use Python input for multi-line strings")
             command.abort = True
         command.command = command_string_escaped
 
@@ -106,11 +106,16 @@ class PrintCommand(CalculatorPlugin):
         calc.settings[self.settings_name] = False
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Prints the command if the setting is set"""
         if not command.calc.settings[self.settings_name]:
             return
-        print(f"Command: {command.command}")
+        print(f"Parsed Command: {command.command}")
+
+    def handle_command(self, command: CalculatorCommand) -> None:
+        if not command.calc.settings[self.settings_name]:
+            return
+        print(f"Handled Command: {command.command}")
 
     def handle_resend(self, command: CalculatorCommand) -> None:
         if not command.calc.settings[self.settings_name]:
@@ -234,8 +239,12 @@ class PerformanceMonitor(CalculatorPlugin):
             self.profile = profile
             self.settings_key = settings_key
 
-        def handle_command(self, command: CalculatorCommand) -> None:
+        def parse_command(self, command: CalculatorCommand) -> None:
             """Executed after all of the command parsing is complete"""
+            self.profile.end_event()
+
+        def handle_command(self, command: CalculatorCommand) -> None:
+            """Executed after all of the command handling is complete"""
             self.profile.end_event()
             self.profile.start_event("Command execution", f"Executing `{command.command}`")
 
@@ -279,12 +288,16 @@ class PerformanceMonitor(CalculatorPlugin):
         calc.settings_toggle[calc.command_prefix + self.settings_toggle2] = self.settings_name
         calc.register_plugin(self.helper)
 
-    def handle_command(self, command: CalculatorCommand) -> None:
+    def parse_command(self, command: CalculatorCommand) -> None:
         """Executed at the start of command parsing"""
         self.profile.clear()
         if command.calc.settings[self.settings_name]:
             print("----------[ Output ]----------")
         self.profile.start_event("Command parsing", f"Parsing `{command.command_original}`")
+
+    def handle_command(self, command: CalculatorCommand) -> None:
+        """Executed at the start of command parsing"""
+        self.profile.start_event("Command handling", f"Handling `{command.command}`")
 
     def handle_runtime_error(self, command: CalculatorCommand, data: str) -> None:
         self.profile.end_event()

@@ -15,8 +15,12 @@ class CalculatorPlugin(ABC):
         """Called by the calculator when the plugin is added."""
         pass
 
+    def parse_command(self, command: CalculatorCommand) -> None:
+        """Parse the given command to the calculator. The given command may or may not be valid Python syntax. The given command can be modified in place"""
+        pass
+
     def handle_command(self, command: CalculatorCommand) -> None:
-        """Proxies the command sent to the calculator. The given command can be modified in place"""
+        """Parse the given command to the calculator. The given command is valid Python syntax. The given command can be modified in place"""
         pass
 
     def handle_runtime_error(self, command: CalculatorCommand, data: str) -> None:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any
 import re as regex
+import webbrowser
 
 from sympy import *
 
@@ -21,6 +22,26 @@ class AddCisFunction(CalculatorPlugin):
     def cis(self, *args, **kwargs):
         """Implements the mathematical cis function"""
         return cos(*args, **kwargs) + I * sin(*args, **kwargs)
+
+
+class AddExternalLinks(CalculatorPlugin):
+    """Calculator plugin to add external links as desmos() and symbolab()"""
+
+    def __init__(self) -> None:
+        super().__init__(self.__class__.__name__, -1)
+
+    def hook(self, calc: Calculator) -> None:
+        """Updates the calculator context"""
+        calc.context.desmos = self.desmos
+        calc.context.symbolab = self.symbolab
+
+    def desmos(self) -> None:
+        """Opens the Desmos graphing calculator in the browser"""
+        webbrowser.open_new_tab("https://desmos.com/calculator")
+
+    def symbolab(self) -> None:
+        """Opens the Desmos graphing calculator in the browser"""
+        webbrowser.open_new_tab("https://www.symbolab.com/")
 
 
 class AddNewtonsMethod(CalculatorPlugin):

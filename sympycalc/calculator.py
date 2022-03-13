@@ -1,6 +1,7 @@
 from __future__ import annotations
+import ast
 from collections import defaultdict
-from typing import NoReturn
+from typing import NoReturn, Any
 import sympy
 from sympy import *
 import code
@@ -20,23 +21,16 @@ class CalculatorContext:
         self.__dict__.update(sympy.__dict__)
         self.plot_3d = plotting.plot3d
 
-    def mksym(self, s: str, /, **kwargs) -> Symbol | tuple[Symbol]:
-        """Makes symbol(s) in the calculator context"""
-        syms = symbols(s, **kwargs)
-        try:
-            for name in syms:
-                self.__dict__[str(name)] = name
-        except TypeError:
-            self.__dict__[s] = syms
-        return syms
-
 
 class CalculatorCommand:
     """Data for a single calculator command"""
 
     def __init__(self, calc: Calculator, command: str) -> None:
         self.calc = calc
-        self.command = command
+        self._command = command
+        self._command_ast = None
+        self._command_symtable = None
+        self._valid_syntax = False
         self.command_original = command
         self.multiline_command = False
         self.abort = False
@@ -44,6 +38,49 @@ class CalculatorCommand:
         self.print_error = False
         self.success = False
         self.buffer = None
+
+    @property
+    def command(self) -> str:
+        return self._command
+
+    @command.setter
+    def command(self, value: str) -> None:
+        if self.valid_syntax and self._command != value:
+            self._command_ast = ast.parse(value, filename="<input>", mode="single")
+            self._command_symtable = symtable.symtable(value, filename="<input>", compile_type="single")
+        self._command = value
+
+    @property
+    def valid_syntax(self) -> bool:
+        return self._valid_syntax
+
+    @valid_syntax.setter
+    def valid_syntax(self, value: bool) -> None:
+        self._valid_syntax = value
+        if value:
+            self._command_ast = ast.parse(self._command, filename="<input>", mode="single")
+            self._command_symtable = symtable.symtable(self._command, filename="<input>", compile_type="single")
+
+    @property
+    def command_ast(self) -> ast.AST | None:
+        if not self._valid_syntax:
+            raise ValueError("Attempted to get the AST of a command without valid syntax")
+        return self._command_ast
+
+    @command_ast.setter
+    def command_ast(self, value: ast.AST) -> None:
+        self._command_ast = value
+        self._command = ast.unparse(value)
+        self._valid_syntax = True
+        self._command_symtable = symtable.symtable(self._command, filename="<input>", compile_type="single")
+
+    def ast_update(self) -> None:
+        """Tells the command to update if the AST was modified in place"""
+        self._command = ast.unparse(self._command_ast)
+
+    @property
+    def command_symtable(self) -> symtable.SymbolTable | None:
+        return self._command_symtable
 
     def __str__(self) -> str:
         return self.command
@@ -111,6 +148,14 @@ class Calculator:
             self.plugins.extend(self.plugin_priorities[k])
         return self
 
+    def notify_plugins_parse(self, command_data: CalculatorCommand) -> None:
+        """Notify all plugins of a command to be parsed"""
+        for plugin in self.plugins:
+            plugin.parse_command(command_data)
+            if command_data.abort:
+                self.notify_plugins_fail(command_data)
+                return
+
     def notify_plugins_command(self, command_data: CalculatorCommand) -> None:
         """Notify all plugins of a command to be processed"""
         for plugin in self.plugins:
@@ -149,21 +194,44 @@ class Calculator:
 
     def notify_plugins_success(self, command_data: CalculatorCommand) -> None:
         """Notify all plugins of a successful command"""
+        command_data.success = True
         for plugin in self.plugins:
             plugin.command_success(command_data)
 
     def notify_plugins_fail(self, command_data: CalculatorCommand) -> None:
         """Notify all plugins of a failed command"""
+        command_data.success = False
         for plugin in self.plugins:
             plugin.command_fail(command_data)
+
+    def mksym(self, s: str, /, **kwargs) -> Symbol | tuple[Symbol]:
+        """Makes symbol(s) in the calculator context"""
+        syms = symbols(s, **kwargs)
+        try:
+            for name in syms:
+                self.context.__dict__[str(name)] = name
+        except TypeError:
+            self.context.__dict__[s] = syms
+        return syms
+
+    def getsym(self, s: str) -> Any:
+        return self.context.__dict__[s]
+
+    def chksym(self, s: str) -> bool:
+        if s == "_":
+            return False
+        return s in self.context.__dict__.keys() or s in __builtins__.keys()
 
     def command(self, command: str) -> bool:
         """Push a command to the calculator."""
         if self.incomplete_command is not None:
-            self.incomplete_command.buffer.append(command)
-            if code.compile_command("\n".join(self.incomplete_command.buffer)) is None:
-                return False
-            self.interpret("\n".join(self.incomplete_command.buffer))
+            try:
+                self.incomplete_command.buffer.append(command)
+                if code.compile_command("\n".join(self.incomplete_command.buffer)) is None:
+                    return False
+                self.interpret("\n".join(self.incomplete_command.buffer))
+            except Exception as e:
+                print("".join(traceback.format_exception(e)).strip() + "\n", end="")
             self.incomplete_command = None
             return True
 
@@ -190,7 +258,10 @@ class Calculator:
 
         # Calculator input preprocessing
         self.current_command = command_data
-        self.notify_plugins_command(command_data)
+        self.notify_plugins_parse(command_data)
+        if command_data.abort:
+            self.notify_plugins_fail(command_data)
+            return True
 
         # Attempt to compile the code
         while True:
@@ -217,14 +288,25 @@ class Calculator:
 
         # Execute the command
         if not command_data.multiline_command:
+            # Single line calculator input
+            # Create the ast and symbol table
+            command_data.valid_syntax = True
+            self.notify_plugins_command(command_data)
+            if command_data.abort:
+                self.notify_plugins_fail(command_data)
+                return True
+            # Execute the command
             command_data.success = True
             self.interpret(command_data.command)
-            # Treat as a calculator input.
             while command_data.resend_command:
                 self.notify_plugins_resend(command_data)
+                if command_data.abort:
+                    command_data.success = False
+                    break
                 command_data.resend_command = False
                 command_data.success = True
                 self.interpret(command_data.command)
+            # Notify success or failure
             if command_data.success:
                 self.notify_plugins_success(command_data)
             else:
@@ -276,6 +358,7 @@ def register_default_plugins(calculator: Calculator) -> Calculator:
         CorrectStringEscape,
         CorrectNumbers,
         AddCisFunction,
+        AddExternalLinks,
         AddnIntegrate,
         AddNewtonsMethod,
         AddOriginVectors,
@@ -290,6 +373,7 @@ def register_default_plugins(calculator: Calculator) -> Calculator:
         OutputStore,
         ReminderMathConstants,
         ReminderTwoLetterSymbol,
+        ReminderComplexNumber,
     ]
     for p in defaultplugins:
         calculator.register_plugin(p())

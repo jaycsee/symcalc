@@ -40,7 +40,7 @@ except NameError: pass
             if type(output) not in self.ignore_types and (regex.match(r"^-?\d+(\.\d+)?(e-?\d+)?(\*I)?$", str(output.evalf())) or regex.match(r"^-?\d+(\.\d+)(e-?\d+)?\s?\+\s?\d+(\.\d+)?(e-?\d+)?\*I$", str(output.evalf()))):
                 print(f"Decimal: ", end="")
                 pretty_print(output.evalf())
-        except (TypeError, AttributeError):
+        except (TypeError, AttributeError, ValueError):
             pass
 
 
