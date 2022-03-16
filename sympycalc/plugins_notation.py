@@ -4,6 +4,7 @@ from typing import Any
 import re as regex
 
 import sympy
+import numbers
 from sympy import *
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
@@ -189,7 +190,7 @@ class NotationMultiply(CalculatorPlugin):
         def visit_Call(self, node: ast.Call) -> ast.AST | None:
             try:
                 self.visit(node)
-                if len(node.args) == 1 and isinstance(eval(ast.unparse(node.func), self.calc.context.__dict__, self.calc.context.__dict__), sympy.core.Expr):
+                if len(node.args) == 1 and isinstance(eval(ast.unparse(node.func), self.calc.context.__dict__, self.calc.context.__dict__), (numbers.Number, sympy.core.Expr)):
                     return ast.BinOp(node.func, ast.Mult(), node.args[0])
             except Exception:
                 pass
@@ -229,11 +230,12 @@ class NotationMultiply(CalculatorPlugin):
         self.helper = NotationMultiply.NotationMultiplyHelper(self.settings_name, self.caller)
         calc.register_plugin(self.helper)
 
-    def parse_command(self, command: CalculatorCommand) -> None:
-        """Use a regex to apply the substitution"""
+    def handle_syntax_error_obj(self, command: CalculatorCommand, exc: SyntaxError) -> None:
         if not command.calc.settings[self.settings_name]:
             return
-        command.command = regex.sub(r"(?<!\w)(\d+)([a-zA-Z])", r"\1*\2", command.command)
+        if regex.fullmatch(r"invalid (binary|octal|decimal|hexadecimal) literal", exc.msg) and command.command[exc.offset - 1] != "_":
+            command.command = command.command[: exc.offset] + "*" + command.command[exc.offset :]
+            command.resend_command = True
 
     def handle_command(self, command: CalculatorCommand) -> None:
         """Check the ast to see if there are better resolutions"""

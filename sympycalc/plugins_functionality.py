@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Any
 import re as regex
-import symtable
 
 from sympy import *
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
@@ -22,10 +21,17 @@ class AutoExact(CalculatorPlugin):
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
     def parse_command(self, command: CalculatorCommand) -> None:
+        if not command.calc.settings[self.settings_name]:
+            return
+        # Convert Python imaginaries to their proper symbolic representation, making sure not to grab symbols starting with the letter j
+        command.command = regex.sub(r"(?<![\w\.])((((([1-9]\d*(_\d+)*)|0)(\.(\d+(_\d+)*)?)?)|(\.\d+(_\d+)*))(e[-\+]?\d+(_\d+)*)?)j(?!\w)", r"\1*I", command.command)
+        command.command = regex.sub(r"(?<![\w\.])((((([1-9]\d*(_\d+)*)|0)(\.(\d+(_\d+)*)?)?)|(\.\d+(_\d+)*))(e[-\+]?\d+(_\d+)*)?)j", r"\1*j", command.command)
+
+    def handle_command(self, command: CalculatorCommand) -> None:
         """Use a regex to apply the substitution"""
         if not command.calc.settings[self.settings_name]:
             return
-        command.command = regex.sub(r"(?<![a-zA-Z_])([\d][\d_]*(\.[\d_]+)?)", r"sympify('\1', rational=True)", command.command)
+        command.command = regex.sub(r"(?<![\w\.])((((([1-9]\d*(_\d+)*)|0)(\.(\d+(_\d+)*)?)?)|(\.\d+(_\d+)*))(e[-\+]?\d+(_\d+)*)?)(?!([e_\d]|([oOxXbB][\d\.])|(\.\de[-\+]?\d)|(\.e[-\+]?\d)|(\.\d)))", r"sympify('\1', rational=True)", command.command)
 
 
 class AutoSymbol(CalculatorPlugin):

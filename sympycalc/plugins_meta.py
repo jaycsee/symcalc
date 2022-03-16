@@ -25,9 +25,9 @@ class CorrectNumbers(CalculatorPlugin):
         """Applies the substitution"""
         if not command.calc.settings[self.settings_name]:
             return
-        command.command = regex.sub(r"0[bB]_?([01]([01_]?))", r"int('\1', 2)", command.command)
-        command.command = regex.sub(r"0[oO]_?([0-7]([0-7_]?))", r"int('\1', 8)", command.command)
-        command.command = regex.sub(r"0[xX]_?([0-9a-fA-F]([0-9a-fA-F_]?))", r"int('\1', 16)", command.command)
+        command.command = regex.sub(r"(?<![\w\.])0[bB](_?[01]+)(_[01]+)*", r"sympify('\1')", command.command)
+        command.command = regex.sub(r"(?<![\w\.])0[oO](_?[0-7]+)(_[0-7]+)*", r"sympify('\1')", command.command)
+        command.command = regex.sub(r"(?<![\w\.])0[xX](_?[0-9a-fA-F]+)(_[0-9a-fA-F]+)*", r"sympify('\1')", command.command)
 
 
 class CorrectStringEscape(CalculatorPlugin):

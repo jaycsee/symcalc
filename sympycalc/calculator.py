@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import symtable
 from collections import defaultdict
 from typing import NoReturn, Any
 import sympy
@@ -172,9 +173,10 @@ class Calculator:
                 self.notify_plugins_fail(command_data)
                 return
 
-    def notify_plugins_syntax_error(self, command_data: CalculatorCommand, data: str) -> None:
+    def notify_plugins_syntax_error(self, command_data: CalculatorCommand, data: str, exc: SyntaxError) -> None:
         """Notify all plugins of a syntax error"""
         for plugin in self.plugins:
+            plugin.handle_syntax_error_obj(command_data, exc)
             plugin.handle_syntax_error(command_data, data)
             if command_data.abort:
                 self.notify_plugins_fail(command_data)
@@ -265,6 +267,8 @@ class Calculator:
 
         # Attempt to compile the code
         while True:
+            command_data.resend_command = False
+            command_data.success = True
             try:
                 compiled = code.compile_command(command_data.command)
                 if compiled is None:
@@ -277,7 +281,7 @@ class Calculator:
                 self.current_command.print_error = True
                 self.current_command.success = False
                 data = "".join(traceback.format_exception(e)).strip() + "\n"
-                self.notify_plugins_syntax_error(command_data, data)
+                self.notify_plugins_syntax_error(command_data, data, e)
                 if command_data.resend_command:
                     self.notify_plugins_resend(command_data)
                     continue
@@ -373,7 +377,6 @@ def register_default_plugins(calculator: Calculator) -> Calculator:
         OutputStore,
         ReminderMathConstants,
         ReminderTwoLetterSymbol,
-        ReminderComplexNumber,
     ]
     for p in defaultplugins:
         calculator.register_plugin(p())
@@ -382,7 +385,6 @@ def register_default_plugins(calculator: Calculator) -> Calculator:
 
 Calculator.register_default_plugins = register_default_plugins
 
-# better performance by splitting what is called for plugins
-# implement plugin syntax error
-# 2x(cos(pi)+1) could expand to 2*x*(cos(pi)+1)
 # sin(x)cos(x)
+# outputdecimal may time out
+# nintegrate is still sad

@@ -39,28 +39,8 @@ class ReminderTwoLetterSymbol(CalculatorPlugin):
         if not self.enabled:
             return
         for s in command.command_symtable.get_symbols():
-            if len(m := s.get_name()) == 2 and m.lower() != "pi" and m.isalpha():
+            if len(m := s.get_name()) == 2 and m.lower() != "pi" and m.isalpha() and not m.startswith("_") and not command.calc.chksym(m):
                 print(f"`{m}` will be treated as a symbol. If you meant `{m[0]}*{m[1]}`, send `{m[0]}` and then resend this command.")
                 self.enabled = False
                 command.abort = True
                 break
-
-
-class ReminderComplexNumber(CalculatorPlugin):
-    """Calculator plugin to remind that e is capitalized"""
-
-    def __init__(self) -> None:
-        super().__init__(self.__class__.__name__, 10)
-        self.enabled = True
-
-    def parse_command(self, command: CalculatorCommand) -> None:
-        """Check to see if the user has entered a complex constant"""
-        if not self.enabled:
-            return
-        if command.calc.chksym("j"):
-            self.enabled = False
-            return
-        if regex.match(r"(([0-9]*\.)?[0-9]+ *\+ *)?([0-9]*\.)?[0-9]+j", command.command):
-            print("You seem to have entered a Python complex number. If you meant to do that, use `I` instead of `j`")
-            self.enabled = False
-            command.abort = True

@@ -27,6 +27,10 @@ class CalculatorPlugin(ABC):
         """Handles the stderr output data printed by the given runtime error as a result of command"""
         pass
 
+    def handle_syntax_error_obj(self, command: CalculatorCommand, exc: SyntaxError) -> None:
+        """Handles the syntax error as a result of command"""
+        pass
+
     def handle_syntax_error(self, command: CalculatorCommand, data: str) -> None:
         """Handles the stderr output data printed by the given syntax error as a result of command"""
         pass
