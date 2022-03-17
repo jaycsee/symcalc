@@ -1,8 +1,8 @@
 from __future__ import annotations
-import ast
 from typing import Any
-import re as regex
 
+import re as regex
+import ast
 import sympy
 import numbers
 from sympy import *
@@ -22,7 +22,7 @@ class NotationConstants(CalculatorPlugin):
         def visit_Name(self, node: ast.Name) -> ast.AST | None:
             if regex.match(r"_[a-zA-Z]\w*", node.id):
                 return ast.Subscript(value=ast.Name(id="constants", ctx=ast.Load()), slice=ast.Constant(value=node.id[1:]), ctx=ast.Load())
-            return node
+            return self.generic_visit(node)
 
     def __init__(self, table: dict[str, Any] = None) -> None:
         """Initializes the plugin with the lookup table. Defaults to physical constants"""
@@ -140,7 +140,7 @@ class NotationMultiply(CalculatorPlugin):
                 return node
             resolved = self.resolve(node.id)
             if len(resolved) == 1:
-                return node
+                return self.generic_visit(node)
             return ast.parse("*".join(resolved), filename="<NotationMultiply>", mode="eval").body
 
         def visit_Call(self, node: ast.Call) -> ast.AST | None:
@@ -148,14 +148,14 @@ class NotationMultiply(CalculatorPlugin):
             if type(f) == ast.Name:
                 resolved = self.resolve(f.id)
                 if len(resolved) == 1:
-                    return node
+                    return self.generic_visit(node)
                 node.func = ast.Name(resolved[-1], ctx=ast.Load())
                 newargs = []
                 for n in node.args:
                     newargs.append(self.visit(n))
                 node.args = [x for x in newargs if x]
                 return ast.BinOp(ast.parse("*".join(resolved[:-1]), filename="<NotationMultiply>", mode="eval").body, ast.Mult(), node)
-            return node
+            return self.generic_visit(node)
 
         def resolve(self, data: str) -> list[str]:
             original_data = data
@@ -189,7 +189,7 @@ class NotationMultiply(CalculatorPlugin):
 
         def visit_Call(self, node: ast.Call) -> ast.AST | None:
             try:
-                self.visit(node)
+                self.generic_visit(node)
                 if len(node.args) == 1 and isinstance(eval(ast.unparse(node.func), self.calc.context.__dict__, self.calc.context.__dict__), (numbers.Number, sympy.core.Expr)):
                     return ast.BinOp(node.func, ast.Mult(), node.args[0])
             except Exception:
@@ -235,6 +235,12 @@ class NotationMultiply(CalculatorPlugin):
             return
         if regex.fullmatch(r"invalid (binary|octal|decimal|hexadecimal) literal", exc.msg) and command.command[exc.offset - 1] != "_":
             command.command = command.command[: exc.offset] + "*" + command.command[exc.offset :]
+            command.resend_command = True
+        if regex.fullmatch(r"invalid imaginary literal", exc.msg) and command.command[exc.offset - 1] != "_":
+            if regex.match(r"j(?!\w)", command.command[exc.offset :]):
+                command.command = command.command[: exc.offset] + "*" + command.command[exc.offset :]
+            else:
+                command.command = command.command[: exc.offset - 1] + "*j" + command.command[exc.offset :]
             command.resend_command = True
 
     def handle_command(self, command: CalculatorCommand) -> None:

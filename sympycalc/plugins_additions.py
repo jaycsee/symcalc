@@ -1,9 +1,8 @@
 from __future__ import annotations
 from typing import Any
-import webbrowser
-
 from sympy import *
 
+import webbrowser
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
 

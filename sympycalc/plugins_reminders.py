@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re as regex
 from sympy import *
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
@@ -33,14 +32,18 @@ class ReminderTwoLetterSymbol(CalculatorPlugin):
     def __init__(self) -> None:
         super().__init__(self.__class__.__name__, 10)
         self.enabled = True
+        self.symbols = set()
 
     def handle_command(self, command: CalculatorCommand) -> None:
         """Check all the symbols for a undefined symbols which are two letters"""
         if not self.enabled:
             return
+        self.symbols.clear()
         for s in command.command_symtable.get_symbols():
-            if len(m := s.get_name()) == 2 and m.lower() != "pi" and m.isalpha() and not m.startswith("_") and not command.calc.chksym(m):
-                print(f"`{m}` will be treated as a symbol. If you meant `{m[0]}*{m[1]}`, send `{m[0]}` and then resend this command.")
-                self.enabled = False
-                command.abort = True
-                break
+            if len(m := s.get_name()) == 2 and m.lower() != "pi" and m.isalpha() and not command.calc.chksym(m):
+                self.symbols.add(m)
+
+    def command_success(self, command: CalculatorCommand) -> None:
+        for s in self.symbols:
+            if command.calc.chksym(s):
+                print(f"`{s}` was treated as a symbol. If you meant `{s[0]}*{s[1]}`, send `del {s}`, `{s[0]}` and then resend that command.")

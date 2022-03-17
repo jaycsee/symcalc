@@ -1,96 +1,11 @@
 from __future__ import annotations
 from typing import Any
-import time
-import re as regex
 
 from sympy import *
+import time
+import re as regex
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
-
-
-class CorrectNumbers(CalculatorPlugin):
-    """Calculator plugin to allow for correct binary, octal, and hexadecimal representation of Python integers, like (0b011_0, 0o17, 0xaf10)"""
-
-    def __init__(self) -> None:
-        super().__init__(self.__class__.__name__, 1)
-        self.settings_name = "correct_numbers"
-        self.settings_toggle = "cn"
-
-    def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = False
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
-
-    def parse_command(self, command: CalculatorCommand) -> None:
-        """Applies the substitution"""
-        if not command.calc.settings[self.settings_name]:
-            return
-        command.command = regex.sub(r"(?<![\w\.])0[bB](_?[01]+)(_[01]+)*", r"sympify('\1')", command.command)
-        command.command = regex.sub(r"(?<![\w\.])0[oO](_?[0-7]+)(_[0-7]+)*", r"sympify('\1')", command.command)
-        command.command = regex.sub(r"(?<![\w\.])0[xX](_?[0-9a-fA-F]+)(_[0-9a-fA-F]+)*", r"sympify('\1')", command.command)
-
-
-class CorrectStringEscape(CalculatorPlugin):
-    """Calculator plugin to shield strings from plugin substitutions"""
-
-    class CorrectStringEscapeHelper(CalculatorPlugin):
-        """Helper plugin for CorrectStringEscape"""
-
-        def __init__(self, string_escapes: list[list[str, str, str]]) -> None:
-            super().__init__(self.__class__.__name__, 998)
-            self.string_escapes = string_escapes
-
-        def parse_command(self, command: CalculatorCommand) -> None:
-            """Set the strings back"""
-            for i, c in enumerate(self.string_escapes):
-                command.command = command.command.replace(f"___{'{str' + str(i + 1) + '}'}___", "".join(c))
-
-    def __init__(self) -> None:
-        super().__init__(self.__class__.__name__, 2)
-        self.string_escapes = []  # type: list[list[str, str, str]]
-
-    def hook(self, calc: Calculator) -> None:
-        """Also register the helper"""
-        self.helper = self.CorrectStringEscapeHelper(self.string_escapes)
-        calc.register_plugin(self.helper)
-
-    def parse_command(self, command: CalculatorCommand) -> None:
-        """Escape the strings"""
-        command_string_escaped = ""
-        self.string_escapes.clear()
-        context = None  # type: list[str, str, str]
-        skip = 0
-        for i, c in enumerate(command.command):
-            if skip:
-                skip -= 1
-                continue
-            if context is not None and command.command.find(context[2], i, i + 3) == i:
-                self.string_escapes.append(context)
-                skip = len(context[2]) - 1
-                context = None
-                command_string_escaped += f"___{'{str' + str(len(self.string_escapes)) + '}'}___"
-            elif context is None and (c == '"' or c == "'"):
-                q = [c, "", c]
-                if command.command.find(c * 3, i, i + 3) == i:
-                    skip = 2
-                    q[0] = c * 3
-                    q[2] = c * 3
-                if command_string_escaped and (command_string_escaped[-1] == "r" or command_string_escaped[-1] == "f"):
-                    if len(command_string_escaped) >= 2 and (command_string_escaped[-2] == "r" or command_string_escaped[-2] == "f"):
-                        q[0] = command_string_escaped[-2:] + q[0]
-                        command_string_escaped = command_string_escaped[:-2]
-                    else:
-                        q[0] = command_string_escaped[-1:] + q[0]
-                        command_string_escaped = command_string_escaped[:-1]
-                context = q
-            elif context is not None:
-                context[1] += c
-            else:
-                command_string_escaped += c
-        if context is not None:
-            print("Unmatched quotes in string processing. Use Python input for multi-line strings")
-            command.abort = True
-        command.command = command_string_escaped
 
 
 class PrintCommand(CalculatorPlugin):

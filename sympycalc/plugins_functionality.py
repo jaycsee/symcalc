@@ -1,7 +1,9 @@
 from __future__ import annotations
 from typing import Any
-import re as regex
 
+import re as regex
+import ast
+import numbers
 from sympy import *
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
@@ -10,28 +12,43 @@ from .plugin import CalculatorPlugin
 class AutoExact(CalculatorPlugin):
     """Calculator plugin to convert numbers to their SymPy exact form"""
 
+    class CheckCalls(ast.NodeTransformer):
+        """Checks the ast for constants and automatically converts them to sympy objects"""
+
+        def __init__(self) -> None:
+            self._current_command = None
+
+        @property
+        def current_command(self) -> CalculatorCommand:
+            return self._current_command
+
+        @current_command.setter
+        def current_command(self, command: CalculatorCommand) -> None:
+            self._current_command = command
+            self.lines = command.command.split("\n")
+
+        def visit_Constant(self, node: ast.Constant) -> Any:
+            if isinstance(node.value, numbers.Number):
+                return ast.Call(ast.Name(id="sympify", ctx=ast.Load()), [ast.Constant(self.lines[node.lineno - 1][node.col_offset : node.end_col_offset])], [ast.keyword("rational", ast.Constant(True))])
+            return self.generic_visit(node)
+
     def __init__(self) -> None:
         super().__init__(self.__class__.__name__, 40)
         self.settings_name = "auto_exact"
         self.settings_toggle = "ax"
+        self.checker = AutoExact.CheckCalls()
 
     def hook(self, calc: Calculator) -> None:
         """Sets the settings in the calculator to their default values"""
         calc.settings[self.settings_name] = True
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
-    def parse_command(self, command: CalculatorCommand) -> None:
-        if not command.calc.settings[self.settings_name]:
-            return
-        # Convert Python imaginaries to their proper symbolic representation, making sure not to grab symbols starting with the letter j
-        command.command = regex.sub(r"(?<![\w\.])((((([1-9]\d*(_\d+)*)|0)(\.(\d+(_\d+)*)?)?)|(\.\d+(_\d+)*))(e[-\+]?\d+(_\d+)*)?)j(?!\w)", r"\1*I", command.command)
-        command.command = regex.sub(r"(?<![\w\.])((((([1-9]\d*(_\d+)*)|0)(\.(\d+(_\d+)*)?)?)|(\.\d+(_\d+)*))(e[-\+]?\d+(_\d+)*)?)j", r"\1*j", command.command)
-
     def handle_command(self, command: CalculatorCommand) -> None:
         """Use a regex to apply the substitution"""
         if not command.calc.settings[self.settings_name]:
             return
-        command.command = regex.sub(r"(?<![\w\.])((((([1-9]\d*(_\d+)*)|0)(\.(\d+(_\d+)*)?)?)|(\.\d+(_\d+)*))(e[-\+]?\d+(_\d+)*)?)(?!([e_\d]|([oOxXbB][\d\.])|(\.\de[-\+]?\d)|(\.e[-\+]?\d)|(\.\d)))", r"sympify('\1', rational=True)", command.command)
+        self.checker.current_command = command
+        command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))
 
 
 class AutoSymbol(CalculatorPlugin):

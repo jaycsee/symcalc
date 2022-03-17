@@ -70,10 +70,8 @@ class CalculatorCommand:
 
     @command_ast.setter
     def command_ast(self, value: ast.AST) -> None:
-        self._command_ast = value
-        self._command = ast.unparse(value)
         self._valid_syntax = True
-        self._command_symtable = symtable.symtable(self._command, filename="<input>", compile_type="single")
+        self.command = ast.unparse(value)
 
     def ast_update(self) -> None:
         """Tells the command to update if the AST was modified in place"""
@@ -359,8 +357,6 @@ def register_default_plugins(calculator: Calculator) -> Calculator:
     defaultplugins = [
         PerformanceMonitor,
         PrintCommand,
-        CorrectStringEscape,
-        CorrectNumbers,
         AddCisFunction,
         AddExternalLinks,
         AddnIntegrate,
