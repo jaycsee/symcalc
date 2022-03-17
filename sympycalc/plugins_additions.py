@@ -3,7 +3,7 @@ from typing import Any
 from sympy import *
 
 import webbrowser
-from .calculator import Calculator, CalculatorCommand, CalculatorContext
+from .calc import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
 
 

@@ -4,7 +4,7 @@ from typing import Any
 import ast
 import numbers
 from sympy import *
-from .calculator import Calculator, CalculatorCommand, CalculatorContext
+from .calc import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
 
 

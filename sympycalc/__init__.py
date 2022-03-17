@@ -1,1 +1,2 @@
-from .calculator import Calculator, CalculatorPlugin, CalculatorContext
+from .calc import Calculator, CalculatorPlugin, CalculatorContext
+from .defaultcalc import DefaultCalculator

@@ -4,7 +4,7 @@ from sympycalc import *
 
 
 def main():
-    Calculator().register_default_plugins().interact()
+    DefaultCalculator().register_default_plugins().interact()
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from sympy import *
-from .calculator import Calculator, CalculatorCommand, CalculatorContext
+from .calc import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
 
 

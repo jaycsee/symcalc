@@ -343,43 +343,6 @@ class Calculator:
                 break
 
 
-from .plugins_additions import *
-from .plugins_functionality import *
-from .plugins_meta import *
-from .plugins_notation import *
-from .plugins_output import *
-from .plugins_reminders import *
-
-
-def register_default_plugins(calculator: Calculator) -> Calculator:
-    """Register the default plugins. Returns itself for chaining"""
-    defaultplugins = [
-        PerformanceMonitor,
-        PrintCommand,
-        AddCisFunction,
-        AddExternalLinks,
-        AddnIntegrate,
-        AddNewtonsMethod,
-        AddOriginVectors,
-        NotationConstants,
-        NotationExponent,
-        AutoExact,
-        NotationInterval,
-        NotationMultiply,
-        AutoSymbol,
-        NotationVector,
-        OutputDecimal,
-        OutputStore,
-        ReminderMathConstants,
-        ReminderTwoLetterSymbol,
-    ]
-    for p in defaultplugins:
-        calculator.register_plugin(p())
-    return calculator
-
-
-Calculator.register_default_plugins = register_default_plugins
-
 # sin(x)cos(x)
 # outputdecimal may time out
 # nintegrate is still sad

@@ -3,7 +3,7 @@ from __future__ import annotations
 import sympy
 import re as regex
 from sympy import *
-from .calculator import Calculator, CalculatorCommand, CalculatorContext
+from .calc import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
 
 
