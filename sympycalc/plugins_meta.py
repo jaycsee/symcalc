@@ -3,7 +3,6 @@ from typing import Any
 
 from sympy import *
 import time
-import re as regex
 from .calculator import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
 

@@ -7,7 +7,6 @@ import sympy
 from sympy import *
 import code
 import traceback
-import re as regex
 
 
 init_printing(wrap_line=False)

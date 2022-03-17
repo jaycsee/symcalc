@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Any
 
-import re as regex
 import ast
 import numbers
 from sympy import *
@@ -44,7 +43,7 @@ class AutoExact(CalculatorPlugin):
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
 
     def handle_command(self, command: CalculatorCommand) -> None:
-        """Use a regex to apply the substitution"""
+        """Walk the tree to apply the substitution"""
         if not command.calc.settings[self.settings_name]:
             return
         self.checker.current_command = command

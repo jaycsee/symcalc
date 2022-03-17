@@ -16,11 +16,12 @@ class NotationConstants(CalculatorPlugin):
     class CheckNames(ast.NodeTransformer):
         """Checks the names of all the nodes in the ast to look for the target notation"""
 
-        def __init__(self, context: CalculatorContext) -> None:
+        def __init__(self, context: CalculatorContext, table: dict[str, Any]) -> None:
             self.context = context
+            self.table = table
 
         def visit_Name(self, node: ast.Name) -> ast.AST | None:
-            if regex.match(r"_[a-zA-Z]\w*", node.id):
+            if regex.match(r"_[a-zA-Z]\w*", node.id) and node.id[1:] in self.table:
                 return ast.Subscript(value=ast.Name(id="constants", ctx=ast.Load()), slice=ast.Constant(value=node.id[1:]), ctx=ast.Load())
             return self.generic_visit(node)
 
@@ -58,7 +59,7 @@ class NotationConstants(CalculatorPlugin):
         calc.settings[self.settings_name] = True
         calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
         calc.context.constants = self.table
-        self.checker = NotationConstants.CheckNames(calc.context)
+        self.checker = NotationConstants.CheckNames(calc.context, self.table)
 
     def handle_command(self, command: CalculatorCommand) -> str | None:
         """Applies the substitution"""
@@ -237,7 +238,7 @@ class NotationMultiply(CalculatorPlugin):
             command.command = command.command[: exc.offset] + "*" + command.command[exc.offset :]
             command.resend_command = True
         if regex.fullmatch(r"invalid imaginary literal", exc.msg) and command.command[exc.offset - 1] != "_":
-            if regex.match(r"j(?!\w)", command.command[exc.offset :]):
+            if regex.match(r"^j(?!\w)", command.command[exc.offset :]):
                 command.command = command.command[: exc.offset] + "*" + command.command[exc.offset :]
             else:
                 command.command = command.command[: exc.offset - 1] + "*j" + command.command[exc.offset :]
