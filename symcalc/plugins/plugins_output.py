@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-import sympy
 import re as regex
+
+import sympy
 from sympy import *
-from .calc import Calculator, CalculatorCommand, CalculatorContext
-from .plugin import CalculatorPlugin
+
+from ..calc import Calculator
+from ..command import CalculatorCommand
+from ..plugin import CalculatorPlugin
 
 
 class OutputDecimal(CalculatorPlugin):

@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import Any
-from sympy import *
 
 import webbrowser
-from .calc import Calculator, CalculatorCommand, CalculatorContext
-from .plugin import CalculatorPlugin
+from typing import Any
+
+from sympy import *
+
+from ..calc import Calculator
+from ..plugin import CalculatorPlugin
 
 
 class AddCisFunction(CalculatorPlugin):

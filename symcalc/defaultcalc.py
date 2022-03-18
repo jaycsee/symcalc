@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from .calc import *
-from .plugins_additions import *
-from .plugins_functionality import *
-from .plugins_meta import *
-from .plugins_notation import *
-from .plugins_output import *
-from .plugins_reminders import *
+from .plugins.plugins_additions import *
+from .plugins.plugins_functionality import *
+from .plugins.plugins_meta import *
+from .plugins.plugins_notation import *
+from .plugins.plugins_output import *
+from .plugins.plugins_reminders import *
 
 
 class DefaultCalculator(Calculator):

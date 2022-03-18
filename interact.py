@@ -1,10 +1,10 @@
-from sympycalc import *
+import symcalc
 
 # Script to start a default calculator on the command line
 
 
 def main():
-    DefaultCalculator().register_default_plugins().interact()
+    symcalc.DefaultCalculator().register_default_plugins().interact()
 
 
 if __name__ == "__main__":

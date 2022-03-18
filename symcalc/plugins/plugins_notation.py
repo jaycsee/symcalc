@@ -1,14 +1,18 @@
 from __future__ import annotations
+
+import ast
+import code
+import numbers
+import re as regex
 from typing import Any
 
-import re as regex
-import ast
 import sympy
-import numbers
-import code
 from sympy import *
-from .calc import Calculator, CalculatorCommand, CalculatorContext
-from .plugin import CalculatorPlugin
+
+from ..calc import Calculator
+from ..command import CalculatorCommand
+from ..context import CalculatorContext
+from ..plugin import CalculatorPlugin
 
 
 class NotationConstants(CalculatorPlugin):

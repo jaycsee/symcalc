@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from sympy import *
-from .calc import Calculator, CalculatorCommand, CalculatorContext
-from .plugin import CalculatorPlugin
+
+from ..command import CalculatorCommand
+from ..plugin import CalculatorPlugin
 
 
 class ReminderMathConstants(CalculatorPlugin):

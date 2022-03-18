@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 from abc import ABC
 
-from .calc import Calculator, CalculatorCommand
+from .calc import Calculator
+from .command import CalculatorCommand
 
 
 class CalculatorPlugin(ABC):
