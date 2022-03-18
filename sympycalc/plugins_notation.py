@@ -5,6 +5,7 @@ import re as regex
 import ast
 import sympy
 import numbers
+import code
 from sympy import *
 from .calc import Calculator, CalculatorCommand, CalculatorContext
 from .plugin import CalculatorPlugin
@@ -234,15 +235,30 @@ class NotationMultiply(CalculatorPlugin):
     def handle_syntax_error_obj(self, command: CalculatorCommand, exc: SyntaxError) -> None:
         if not command.calc.settings[self.settings_name]:
             return
-        if regex.fullmatch(r"invalid (binary|octal|decimal|hexadecimal) literal", exc.msg) and command.command[exc.offset - 1] != "_":
-            command.command = command.command[: exc.offset] + "*" + command.command[exc.offset :]
+        lines = command.command.split("\n")
+        if regex.fullmatch(r"invalid (binary|octal|decimal|hexadecimal) literal", exc.msg) and lines[exc.lineno - 1][exc.offset - 1] != "_":
+            command.command = lines[exc.lineno - 1][: exc.offset] + "*" + lines[exc.lineno - 1][exc.offset :]
             command.resend_command = True
-        if regex.fullmatch(r"invalid imaginary literal", exc.msg) and command.command[exc.offset - 1] != "_":
-            if regex.match(r"^j(?!\w)", command.command[exc.offset :]):
-                command.command = command.command[: exc.offset] + "*" + command.command[exc.offset :]
+        elif regex.fullmatch(r"invalid imaginary literal", exc.msg) and lines[exc.lineno - 1][exc.offset - 1] != "_":
+            if regex.match(r"^j(?!\w)", lines[exc.lineno - 1][exc.offset :]):
+                command.command = lines[exc.lineno - 1][: exc.offset] + "*" + lines[exc.lineno - 1][exc.offset :]
             else:
-                command.command = command.command[: exc.offset - 1] + "*j" + command.command[exc.offset :]
+                command.command = lines[exc.lineno - 1][: exc.offset - 1] + "*j" + lines[exc.lineno - 1][exc.offset :]
             command.resend_command = True
+        elif exc.msg == "invalid syntax. Perhaps you forgot a comma?":
+            original = lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1]
+            first = ""
+            for i, c in enumerate(original):
+                first += c
+                try:
+                    code.compile_command(first)
+                except SyntaxError as e:
+                    if e.msg == "invalid syntax. Perhaps you forgot a comma?" and (i != len(original) - 1 or regex.match(r"\w", c)):
+                        n = lines
+                        n[exc.lineno - 1] = n[exc.lineno - 1][: exc.offset - 1] + original[:i] + "*" + original[i:] + n[exc.lineno - 1][exc.end_offset - 1 :]
+                        command.command = "\n".join(n)
+                        command.resend_command = True
+                        break
 
     def handle_command(self, command: CalculatorCommand) -> None:
         """Check the ast to see if there are better resolutions"""

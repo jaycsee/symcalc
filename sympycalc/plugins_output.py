@@ -26,18 +26,40 @@ class OutputDecimal(CalculatorPlugin):
         """Send the command to the interpreter to output the decimal represent"""
         if not command.calc.settings[self.settings_name]:
             return
-        command.calc.interpret(
-            """try:
-    del _
-except NameError: pass
-"""
-        )
-        command.calc.interpret("output_decimal(_)")
+        command.calc.interpret("try:\n\tdel _\nexcept NameError: pass\n")
+        command.calc.interpret("try:\n\toutput_decimal(_)\nexcept NameError: pass\n")
+
+    def check_decimal(self, s: str) -> str:
+        """Returns if the given string if it is a valid decimal representation of a number, otherwise None"""
+        return s if (regex.match(r"^-?\d+(\.\d+)?(e-?\d+)?(\*I)?$", s) or regex.match(r"^-?\d+(\.\d+)(e-?\d+)?\s?\+\s?\d+(\.\d+)?(e-?\d+)?\*I$", s)) else None
 
     def output_decimal(self, output) -> None:
         """Prints the decimal of the given output"""
         try:
-            if type(output) not in self.ignore_types and not output.free_symbols and (regex.match(r"^-?\d+(\.\d+)?(e-?\d+)?(\*I)?$", str(output.evalf())) or regex.match(r"^-?\d+(\.\d+)(e-?\d+)?\s?\+\s?\d+(\.\d+)?(e-?\d+)?\*I$", str(output.evalf()))):
+            if isinstance(output, sympy.matrices.dense.MutableDenseMatrix) and output.shape[1] == 1:
+                output = list(output)
+            if isinstance(output, list):
+                out_list = []
+                print_valid = False
+                print_out = False
+                for o in output:
+                    try:
+                        if type(o) not in self.ignore_types:
+                            print_out = True
+                        if not o.free_symbols:
+                            s = self.check_decimal(str(o.evalf(n=5)))
+                            out_list.append(s)
+                            if s is not None:
+                                print_valid = True
+                        else:
+                            out_list.append(None)
+                    except (TypeError, AttributeError, ValueError):
+                        out_list.append(None)
+                if print_out and print_valid:
+                    print(f"Decimals: ", end="")
+                    pretty_print(out_list)
+                return
+            if type(output) not in self.ignore_types and not output.free_symbols and self.check_decimal(str(output.evalf())):
                 print(f"Decimal: ", end="")
                 pretty_print(output.evalf())
         except (TypeError, AttributeError, ValueError):
@@ -65,15 +87,24 @@ class OutputStore(CalculatorPlugin):
         """Send the command to the interpreter to store the output"""
         if not command.calc.settings[self.settings_name]:
             return
-        command.calc.interpret(
-            """try:
-    del _
-except NameError: pass
-"""
-        )
-        command.calc.interpret("output_store(_)")
+        command.calc.interpret("try:\n\tdel _\nexcept NameError: pass\n")
+        if not command.calc.chksym("out"):
+            command.calc.context.out = [None]
+            return
+        command.calc.interpret("try:\n\toutput_store(_)\nexcept NameError: pass\n")
 
     def output_store(self, output) -> None:
-        if output is not self.context.out and output not in self.context.out and output.__class__.__module__.startswith("sympy.") and type(output) not in self.ignore_types and str(type(output)) != "<class 'sympy.core.assumptions.ManagedProperties'>":
-            self.context.out.append(output)
-            print(f"Result stored in out[{len(self.context.out)-1}]")
+        if output is self.context.out or output is None:
+            return
+        if output in self.context.out and (n := self.context.out.index(output)):
+            print(f"Result in out[{n}]")
+            return
+        if "__iter__" in dir(output):
+            checks = list(output)
+        else:
+            checks = [output]
+        for o in checks:
+            if o.__class__.__module__.startswith("sympy.") and type(o) not in self.ignore_types and str(type(o)) != "<class 'sympy.core.assumptions.ManagedProperties'>":
+                self.context.out.append(output)
+                print(f"Result stored in out[{len(self.context.out)-1}]")
+                break

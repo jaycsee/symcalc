@@ -9,9 +9,6 @@ import code
 import traceback
 
 
-init_printing(wrap_line=False)
-
-
 class CalculatorContext:
     """Contains all of the available methods and variables in a class. CalculatorContext.__dict__ works similarly to globals()"""
 
@@ -112,7 +109,6 @@ class Calculator:
         # Prepare the calculator interperter
         self.console = code.InteractiveConsole(self.context.__dict__)
         self.console.write = self.handle_error_output
-        self.interpret("'SymPy Calculator'")
         # Strict Python mode
         self.strict_python = False
         # List of plugins
@@ -214,12 +210,19 @@ class Calculator:
         return syms
 
     def getsym(self, s: str) -> Any:
+        if s in __builtins__.keys():
+            return __builtins__[s]
         return self.context.__dict__[s]
 
-    def chksym(self, s: str) -> bool:
+    def chksym(self, s: str, strict: bool = False) -> bool:
         if s == "_":
             return False
         return s in self.context.__dict__.keys() or s in __builtins__.keys()
+
+    def reset(self) -> None:
+        """Throws away the buffer from previous commands"""
+        self.console.resetbuffer()
+        self.incomplete_command = None
 
     def command(self, command: str) -> bool:
         """Push a command to the calculator."""
@@ -234,7 +237,7 @@ class Calculator:
             self.incomplete_command = None
             return True
 
-        self.console.resetbuffer()
+        self.reset()
 
         if not command:
             return True
@@ -328,6 +331,7 @@ class Calculator:
 
     def interact(self, prompt: str = "Calculator") -> NoReturn:
         """Start an interactive prompt with the calculator. Exits on EOF, in which case the program should clean up and exit"""
+        init_printing(wrap_line=False)
         while True:
             try:
                 if self.command(command := input(prompt + " >>> ")):
@@ -339,6 +343,7 @@ class Calculator:
                     pass
             except KeyboardInterrupt:
                 print()
+                self.reset()
             except EOFError:
                 break
 

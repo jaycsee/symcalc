@@ -11,7 +11,7 @@ from .plugin import CalculatorPlugin
 class AutoExact(CalculatorPlugin):
     """Calculator plugin to convert numbers to their SymPy exact form"""
 
-    class CheckCalls(ast.NodeTransformer):
+    class CheckConstants(ast.NodeTransformer):
         """Checks the ast for constants and automatically converts them to sympy objects"""
 
         def __init__(self) -> None:
@@ -35,7 +35,7 @@ class AutoExact(CalculatorPlugin):
         super().__init__(self.__class__.__name__, 40)
         self.settings_name = "auto_exact"
         self.settings_toggle = "ax"
-        self.checker = AutoExact.CheckCalls()
+        self.checker = AutoExact.CheckConstants()
 
     def hook(self, calc: Calculator) -> None:
         """Sets the settings in the calculator to their default values"""
@@ -57,7 +57,6 @@ class AutoSymbol(CalculatorPlugin):
         super().__init__(self.__class__.__name__, 21)
         self.settings_name = "auto_symbol"
         self.settings_toggle = "as"
-        self.fails = set()  # type: set[str]
 
     def hook(self, calc: Calculator) -> None:
         """Sets the settings in the calculator to their default values"""
@@ -69,10 +68,10 @@ class AutoSymbol(CalculatorPlugin):
     def handle_command(self, command: CalculatorCommand) -> None:
         if not command.calc.settings[self.settings_name]:
             return
-        for s in command.command_symtable.get_symbols():
-            if not command.calc.chksym(s.get_name()) and not s.get_name().startswith("_"):
+        for n in ast.walk(command.command_ast):
+            if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and not command.calc.chksym(n.id) and not n.id.startswith("_"):
                 if command.calc.settings[self.settings_name + "_char"]:
-                    command.calc.mksym(",".join(list(s.get_name())))
+                    command.calc.mksym(",".join(list(n.id)))
                 else:
-                    print(f"New symbol: {s.get_name()}")
-                    command.calc.mksym(s.get_name())
+                    print(f"New symbol: {n.id}")
+                    command.calc.mksym(n.id)
