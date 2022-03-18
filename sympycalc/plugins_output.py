@@ -31,7 +31,7 @@ class OutputDecimal(CalculatorPlugin):
 
     def check_decimal(self, s: str) -> str:
         """Returns if the given string if it is a valid decimal representation of a number, otherwise None"""
-        return s if (regex.match(r"^-?\d+(\.\d+)?(e-?\d+)?(\*I)?$", s) or regex.match(r"^-?\d+(\.\d+)(e-?\d+)?\s?\+\s?\d+(\.\d+)?(e-?\d+)?\*I$", s)) else None
+        return s if (regex.match(r"^-?\d+(\.\d+)?(e-?\d+)?(\*I)?$", s) or regex.match(r"^-?\d+(\.\d+)(e-?\d+)?\s?[-\+]\s?\d+(\.\d+)?(e-?\d+)?\*I$", s)) else None
 
     def output_decimal(self, output) -> None:
         """Prints the decimal of the given output"""
