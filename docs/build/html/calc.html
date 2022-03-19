@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator &mdash; SymCalc 0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Plugins" href="plugins.html" />
+    <link rel="prev" title="Building with SymCalc" href="building.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> SymCalc
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="building.html">Building with SymCalc</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="defaultplugins.html">Default Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SymCalc</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="building.html">Building with SymCalc</a> &raquo;</li>
+      <li>Calculator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/calc.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="calculator">
+<h1>Calculator<a class="headerlink" href="#calculator" title="Permalink to this headline"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">Calculator</span></code> class contains the framework for user plugin interactions using data classes <code class="docutils literal notranslate"><span class="pre">CalculatorContext</span></code> and <code class="docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="symcalc.Calculator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.</span></span><span class="sig-name descname"><span class="pre">Calculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator" title="Permalink to this definition"></a></dt>
+<dd><p>A calculator based on SymPy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<a class="reference internal" href="#symcalc.CalculatorContext" title="symcalc.CalculatorContext"><em>CalculatorContext</em></a>) – </p></li>
+<li><p><strong>command_prefix</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.handle_error_output">
+<span class="sig-name descname"><span class="pre">handle_error_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.handle_error_output" title="Permalink to this definition"></a></dt>
+<dd><p>Method for handling error output passed to the console interpreter. Given to plugins</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.register_plugin">
+<span class="sig-name descname"><span class="pre">register_plugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.register_plugin" title="Permalink to this definition"></a></dt>
+<dd><p>Register the given plugin. Returns itself for chaining</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>plugin</strong> (<a class="reference internal" href="plugins.html#symcalc.CalculatorPlugin" title="symcalc.plugin.CalculatorPlugin"><em>symcalc.plugin.CalculatorPlugin</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#symcalc.Calculator" title="symcalc.calc.Calculator">symcalc.calc.Calculator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.notify_plugins_parse">
+<span class="sig-name descname"><span class="pre">notify_plugins_parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.notify_plugins_parse" title="Permalink to this definition"></a></dt>
+<dd><p>Notify all plugins of a command to be parsed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>command_data</strong> (<a class="reference internal" href="#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.notify_plugins_command">
+<span class="sig-name descname"><span class="pre">notify_plugins_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.notify_plugins_command" title="Permalink to this definition"></a></dt>
+<dd><p>Notify all plugins of a command to be processed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>command_data</strong> (<a class="reference internal" href="#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.notify_plugins_resend">
+<span class="sig-name descname"><span class="pre">notify_plugins_resend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.notify_plugins_resend" title="Permalink to this definition"></a></dt>
+<dd><p>Notify all plugins of a resent command to be processed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>command_data</strong> (<a class="reference internal" href="#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.notify_plugins_syntax_error">
+<span class="sig-name descname"><span class="pre">notify_plugins_syntax_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.notify_plugins_syntax_error" title="Permalink to this definition"></a></dt>
+<dd><p>Notify all plugins of a syntax error</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command_data</strong> (<a class="reference internal" href="#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p></li>
+<li><p><strong>data</strong> (<em>str</em>) – </p></li>
+<li><p><strong>exc</strong> (<em>SyntaxError</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.notify_plugins_runtime_error">
+<span class="sig-name descname"><span class="pre">notify_plugins_runtime_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.notify_plugins_runtime_error" title="Permalink to this definition"></a></dt>
+<dd><p>Notify all plugins of a runtime error</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command_data</strong> (<a class="reference internal" href="#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p></li>
+<li><p><strong>data</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.notify_plugins_success">
+<span class="sig-name descname"><span class="pre">notify_plugins_success</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.notify_plugins_success" title="Permalink to this definition"></a></dt>
+<dd><p>Notify all plugins of a successful command</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>command_data</strong> (<a class="reference internal" href="#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.notify_plugins_fail">
+<span class="sig-name descname"><span class="pre">notify_plugins_fail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.notify_plugins_fail" title="Permalink to this definition"></a></dt>
+<dd><p>Notify all plugins of a failed command</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>command_data</strong> (<a class="reference internal" href="#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.mksym">
+<span class="sig-name descname"><span class="pre">mksym</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.mksym" title="Permalink to this definition"></a></dt>
+<dd><p>Makes symbol(s) in the calculator context</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>s</strong> (<em>str</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>sympy.core.symbol.Symbol | tuple[sympy.core.symbol.Symbol]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Throws away the buffer from previous commands</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.command">
+<span class="sig-name descname"><span class="pre">command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.command" title="Permalink to this definition"></a></dt>
+<dd><p>Push a command to the calculator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>command</strong> (<em>str</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.interpret">
+<span class="sig-name descname"><span class="pre">interpret</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.interpret" title="Permalink to this definition"></a></dt>
+<dd><p>Interpret the given line as input. Should be valid Python</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>line</strong> (<em>str</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.Calculator.interact">
+<span class="sig-name descname"><span class="pre">interact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Calculator'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.Calculator.interact" title="Permalink to this definition"></a></dt>
+<dd><p>Start an interactive prompt with the calculator. Exits on EOF, in which case the program should clean up and exit</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prompt</strong> (<em>str</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><em>NoReturn</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="symcalc.CalculatorContext">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.</span></span><span class="sig-name descname"><span class="pre">CalculatorContext</span></span><a class="headerlink" href="#symcalc.CalculatorContext" title="Permalink to this definition"></a></dt>
+<dd><p>Contains all of the available methods and variables in a class. CalculatorContext.__dict__ works similarly to globals()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="symcalc.CalculatorCommand">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.</span></span><span class="sig-name descname"><span class="pre">CalculatorCommand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorCommand" title="Permalink to this definition"></a></dt>
+<dd><p>Data for a single calculator command</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calc</strong> (<a class="reference internal" href="#symcalc.Calculator" title="symcalc.calc.Calculator"><em>symcalc.calc.Calculator</em></a>) – </p></li>
+<li><p><strong>command</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.CalculatorCommand.ast_update">
+<span class="sig-name descname"><span class="pre">ast_update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorCommand.ast_update" title="Permalink to this definition"></a></dt>
+<dd><p>Tells the command to update if the AST was modified in place</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="building.html" class="btn btn-neutral float-left" title="Building with SymCalc" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="plugins.html" class="btn btn-neutral float-right" title="Plugins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, JaySee.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
