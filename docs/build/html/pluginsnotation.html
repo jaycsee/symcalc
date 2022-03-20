@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plugins - Notation &mdash; SymCalc 0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Plugins - Output" href="pluginsoutput.html" />
+    <link rel="prev" title="Plugins - Meta" href="pluginsmeta.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> SymCalc
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="building.html">Building with SymCalc</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="calc.html">Calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="default.html">Default Environment</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="pluginsadditions.html">Plugins - Additions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pluginsfunctionality.html">Plugins - Functionality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pluginsmeta.html">Plugins - Meta</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Plugins - Notation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pluginsoutput.html">Plugins - Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pluginsreminders.html">Plugins - Reminders</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="testing.html">Testing</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SymCalc</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="building.html">Building with SymCalc</a> &raquo;</li>
+          <li><a href="default.html">Default Environment</a> &raquo;</li>
+      <li>Plugins - Notation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pluginsnotation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="plugins-notation">
+<h1>Plugins - Notation<a class="headerlink" href="#plugins-notation" title="Permalink to this headline"></a></h1>
+<p>Plugins in this category add valid notation to commands.</p>
+<span class="target" id="module-symcalc.plugins.plugins_notation"></span><dl class="py class">
+<dt class="sig sig-object py" id="symcalc.plugins.plugins_notation.NotationConstants">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_notation.</span></span><span class="sig-name descname"><span class="pre">NotationConstants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.plugins.plugins_notation.NotationConstants" title="Permalink to this definition"></a></dt>
+<dd><p>Calculator plugin to expand <code class="docutils literal notranslate"><span class="pre">_x</span></code> to <code class="docutils literal notranslate"><span class="pre">constants['x']</span></code>, where the dictionary contains common physical constants</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Calculator</span> <span class="o">&gt;&gt;&gt;</span> <span class="n">_c</span> <span class="c1"># Speed of light</span>
+<span class="mi">299792458</span>
+<span class="n">Calculator</span> <span class="o">&gt;&gt;&gt;</span> <span class="n">_g</span> <span class="c1"># Earth&#39;s gravity</span>
+<span class="mf">9.80665000000000</span>
+<span class="n">Calculator</span> <span class="o">&gt;&gt;&gt;</span> <span class="n">_Na</span> <span class="c1"># Avogadro&#39;s constant</span>
+<span class="mf">6.02214076000000e-23</span>
+</pre></div>
+</div>
+<p>Initializes the plugin with the lookup table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">Any]</span></code>) – The lookup table to use. Defaults to physical constants</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="symcalc.plugins.plugins_notation.NotationExponent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_notation.</span></span><span class="sig-name descname"><span class="pre">NotationExponent</span></span><a class="headerlink" href="#symcalc.plugins.plugins_notation.NotationExponent" title="Permalink to this definition"></a></dt>
+<dd><p>Calculator plugin to change <code class="docutils literal notranslate"><span class="pre">^</span></code> to <code class="docutils literal notranslate"><span class="pre">**</span></code>, the Python syntax for powers</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Calculator</span> <span class="o">&gt;&gt;&gt;</span> <span class="o">/</span><span class="n">ne</span>
+<span class="n">Calculator</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">3</span><span class="o">^</span><span class="mi">3</span>
+<span class="mi">27</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is a implemented as a simple string substitution, and will not differentiate between notation and the contents of a string. For this reason, this plugin is opt-in with the <code class="docutils literal notranslate"><span class="pre">/ne</span></code> toggle</p>
+</div>
+<p>Initializes the plugin</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="symcalc.plugins.plugins_notation.NotationInterval">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_notation.</span></span><span class="sig-name descname"><span class="pre">NotationInterval</span></span><a class="headerlink" href="#symcalc.plugins.plugins_notation.NotationInterval" title="Permalink to this definition"></a></dt>
+<dd><p>Calculator plugin to allow for shortened interval notation</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; i[0,oo[
+[0, ∞)
+Result stored in out[6]
+Calculator &gt;&gt;&gt; i[-3,3]
+[-3, 3]
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The current implementation may collide with subscripting variables that end in <code class="docutils literal notranslate"><span class="pre">i</span></code> and produce unwanted behavior. Use the toggle <code class="docutils literal notranslate"><span class="pre">/ni</span></code> to opt-out</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This plugin only understands the french notation for open intervals. eg. <code class="docutils literal notranslate"><span class="pre">i]-oo,oo[</span></code></p>
+</div>
+<p>Initializes the plugin</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="symcalc.plugins.plugins_notation.NotationMultiply">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_notation.</span></span><span class="sig-name descname"><span class="pre">NotationMultiply</span></span><a class="headerlink" href="#symcalc.plugins.plugins_notation.NotationMultiply" title="Permalink to this definition"></a></dt>
+<dd><p>Calculator plugin to allow for multiplication by juxtaposition</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; 2pi
+2⋅π
+Calculator &gt;&gt;&gt; 2b(x+3)**2
+   2        2
+2⋅b ⋅(x + 3)
+Calculator &gt;&gt;&gt; 2 a b sin(x)cos(x)
+2⋅a⋅b⋅sin(x)⋅cos(x)
+Calculator &gt;&gt;&gt; 2ab
+2⋅a⋅b
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Be careful with juxtaposing with variable denominators. It may produce unexpected parsing due to Python’s call precedence</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; 2x/y(x+1)
+   2⋅x
+─────────
+y⋅(x + 1)
+</pre></div>
+</div>
+</div>
+<p>Initializes the plugin</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="symcalc.plugins.plugins_notation.NotationVector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_notation.</span></span><span class="sig-name descname"><span class="pre">NotationVector</span></span><a class="headerlink" href="#symcalc.plugins.plugins_notation.NotationVector" title="Permalink to this definition"></a></dt>
+<dd><p>Calculator plugin to allow for shortened vector and matrix notation</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; v[1,2,3]
+⎡1⎤
+⎢ ⎥
+⎢2⎥
+⎢ ⎥
+⎣3⎦
+Calculator &gt;&gt;&gt; m[1,2,3\4,5,6]
+⎡1  2  3⎤
+⎢       ⎥
+⎣4  5  6⎦
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The current implementation may collide with subscripting variables that end in <code class="docutils literal notranslate"><span class="pre">v</span></code> and produce unwanted behavior. Use the toggle <code class="docutils literal notranslate"><span class="pre">/ni</span></code> to opt-out</p>
+</div>
+<p>Initializes the plugin</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pluginsmeta.html" class="btn btn-neutral float-left" title="Plugins - Meta" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pluginsoutput.html" class="btn btn-neutral float-right" title="Plugins - Output" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, JaySee.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

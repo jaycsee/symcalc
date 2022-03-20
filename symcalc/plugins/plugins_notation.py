@@ -16,12 +16,23 @@ from ..plugin import CalculatorPlugin
 
 
 class NotationConstants(CalculatorPlugin):
-    """Calculator plugin to expand _x to constants['x'], where the dictionary contains common physical constants"""
+    """Calculator plugin to expand ``_x`` to ``constants['x']``, where the dictionary contains common physical constants
+
+    .. code-block::
+
+        Calculator >>> _c # Speed of light
+        299792458
+        Calculator >>> _g # Earth's gravity
+        9.80665000000000
+        Calculator >>> _Na # Avogadro's constant
+        6.02214076000000e-23
+
+    """
 
     class CheckNames(ast.NodeTransformer):
         """Checks the names of all the nodes in the ast to look for the target notation"""
 
-        def __init__(self, context: CalculatorContext, table: dict[str, Any]) -> None:
+        def __init__(self, context: CalculatorContext, table: dict[str, Any]):
             self.context = context
             self.table = table
 
@@ -30,8 +41,14 @@ class NotationConstants(CalculatorPlugin):
                 return ast.Subscript(value=ast.Name(id="constants", ctx=ast.Load()), slice=ast.Constant(value=node.id[1:]), ctx=ast.Load())
             return self.generic_visit(node)
 
-    def __init__(self, table: dict[str, Any] = None) -> None:
-        """Initializes the plugin with the lookup table. Defaults to physical constants"""
+    def __init__(self, table: dict[str, Any] = None):
+        """Initializes the plugin with the lookup table
+
+        Parameters
+        ----------
+        table : :class:`dict[str, Any]`
+            The lookup table to use. Defaults to physical constants
+        """
         super().__init__(self.__class__.__name__, 50)
         self.settings_name = "notation_constants"
         self.settings_toggle = "nc"
@@ -46,7 +63,7 @@ class NotationConstants(CalculatorPlugin):
                 "epsilon0": sympify("8.854187812813") * 10 ** -12,  # Vacuum electric permittivity
                 "mu0": sympify("1.2566370621219") * 10 ** -6,  # Vacuum magnetic permittivity
                 "e": sympify("1.602176634") * 10 ** -19,  # Elementary charge
-                "Na": sympify("6.02214076") * 10 ** -23,  # Avogadro constant
+                "Na": sympify("6.02214076") * 10 ** -23,  # Avogadro's constant
                 "ke": sympify("8.987551792314") * 10 ** 9,  # Coulomb constant
                 "mp": sympify("1.6726219236951") * 10 ** -27,  # Proton mass
                 "mn": sympify("1.6749274980495") * 10 ** -27,  # Neutron mass
@@ -73,9 +90,18 @@ class NotationConstants(CalculatorPlugin):
 
 
 class NotationExponent(CalculatorPlugin):
-    """Calculator plugin to change ^ to **, the Python syntax for powers"""
+    """Calculator plugin to change ``^`` to ``**``, the Python syntax for powers
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> /ne
+        Calculator >>> 3^3
+        27
+
+    .. note:: This is a implemented as a simple string substitution, and will not differentiate between notation and the contents of a string. For this reason, this plugin is opt-in with the ``/ne`` toggle
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, 30)
         self.settings_name = "notation_exponent"
         self.settings_toggle = "ne"
@@ -93,9 +119,22 @@ class NotationExponent(CalculatorPlugin):
 
 
 class NotationInterval(CalculatorPlugin):
-    """Calculator plugin to allow for alternate interval notation, i[1,2] and i]-oo,oo["""
+    """Calculator plugin to allow for shortened interval notation
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> i[0,oo[
+        [0, ∞)
+        Result stored in out[6]
+        Calculator >>> i[-3,3]
+        [-3, 3]
+
+    .. note:: The current implementation may collide with subscripting variables that end in ``i`` and produce unwanted behavior. Use the toggle ``/ni`` to opt-out
+
+    .. note:: This plugin only understands the french notation for open intervals. eg. ``i]-oo,oo[``
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, 61)
         self.settings_name = "notation_interval"
         self.settings_toggle = "ni"
@@ -132,12 +171,34 @@ class NotationInterval(CalculatorPlugin):
 
 
 class NotationMultiply(CalculatorPlugin):
-    """Calculator plugin to allow for multiplication by juxtaposition with numbers, such as 2pi"""
+    """Calculator plugin to allow for multiplication by juxtaposition
+
+    .. code-block::
+
+        Calculator >>> 2pi
+        2⋅π
+        Calculator >>> 2b(x+3)**2
+           2        2
+        2⋅b ⋅(x + 3)
+        Calculator >>> 2 a b sin(x)cos(x)
+        2⋅a⋅b⋅sin(x)⋅cos(x)
+        Calculator >>> 2ab
+        2⋅a⋅b
+
+    .. note:: Be careful with juxtaposing with variable denominators. It may produce unexpected parsing due to Python's call precedence
+
+        .. code-block::
+
+            Calculator >>> 2x/y(x+1)
+               2⋅x
+            ─────────
+            y⋅(x + 1)
+    """
 
     class CheckResolutions(ast.NodeTransformer):
         """Checks all of the resolutions of the ast to see there are better resolutions then leaving them unknown"""
 
-        def __init__(self, calc: Calculator) -> None:
+        def __init__(self, calc: Calculator):
             self.calc = calc
             self.ignored_types_not_last = set([type(sympy.Basic), sympy.core.function.FunctionClass, type(lambda x: x), type(sympify), type(type), type(sympy), sympy.printing.printer._PrintFunction])
 
@@ -190,7 +251,7 @@ class NotationMultiply(CalculatorPlugin):
     class CheckCalls(ast.NodeTransformer):
         """Checks the ast for using brackets to denote multiplication by juxtaposition"""
 
-        def __init__(self, calc: Calculator) -> None:
+        def __init__(self, calc: Calculator):
             self.calc = calc
 
         def visit_Call(self, node: ast.Call) -> ast.AST | None:
@@ -205,7 +266,7 @@ class NotationMultiply(CalculatorPlugin):
     class NotationMultiplyHelper(CalculatorPlugin):
         """Helper plugin for NotationMultiply"""
 
-        def __init__(self, settings_name: str, caller: NotationMultiply.CheckCalls) -> None:
+        def __init__(self, settings_name: str, caller: NotationMultiply.CheckCalls):
             super().__init__(self.__class__.__name__, 22)
             self.settings_name = settings_name
             self.caller = caller
@@ -215,7 +276,7 @@ class NotationMultiply(CalculatorPlugin):
             if command.calc.settings[self.settings_name] and command.calc.settings[self.settings_name + "_calls"]:
                 command.command_ast = ast.fix_missing_locations(self.caller.visit(command.command_ast))
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(self.__class__.__name__, 20)
         self.settings_name = "notation_multiply"
         self.settings_toggle = "nm"
@@ -271,9 +332,25 @@ class NotationMultiply(CalculatorPlugin):
 
 
 class NotationVector(CalculatorPlugin):
-    """Calculator plugin to allow for alternate vector and matrix notation, v[1,2,3] and m[1,2,3\\\\4,5,6]"""
+    """Calculator plugin to allow for shortened vector and matrix notation
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> v[1,2,3]
+        ⎡1⎤
+        ⎢ ⎥
+        ⎢2⎥
+        ⎢ ⎥
+        ⎣3⎦
+        Calculator >>> m[1,2,3\\4,5,6]
+        ⎡1  2  3⎤
+        ⎢       ⎥
+        ⎣4  5  6⎦
+
+    .. note:: The current implementation may collide with subscripting variables that end in ``v`` and produce unwanted behavior. Use the toggle ``/ni`` to opt-out
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, 60)
         self.settings_name = "notation_vector"
         self.settings_toggle = "nv"

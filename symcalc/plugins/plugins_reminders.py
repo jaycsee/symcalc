@@ -7,9 +7,9 @@ from ..plugin import CalculatorPlugin
 
 
 class ReminderMathConstants(CalculatorPlugin):
-    """Calculator plugin to remind that e is capitalized and pi is not"""
+    """Calculator plugin to remind that ``E`` is capitalized and ``pi`` is not"""
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(self.__class__.__name__, 10)
         self.eenabled = True
         self.pienabled = True
@@ -28,9 +28,9 @@ class ReminderMathConstants(CalculatorPlugin):
 
 
 class ReminderTwoLetterSymbol(CalculatorPlugin):
-    """Calculator plugin to remind that e is capitalized"""
+    """Calculator plugin to remind that symbols are not multiplied together automatically"""
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(self.__class__.__name__, 10)
         self.enabled = True
         self.symbols = set()

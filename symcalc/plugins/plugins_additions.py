@@ -10,9 +10,16 @@ from ..plugin import CalculatorPlugin
 
 
 class AddCisFunction(CalculatorPlugin):
-    """Calculator plugin to add cis(theta)=cos(theta)+I*sin(theta)"""
+    """Calculator plugin to add the ``cis`` function. ``cis(x)`` is equivalent to ``cos(x)+I*sin(x)``
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> 2*cis(pi/3)
+        1 + √3⋅ⅈ
+
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, -1)
 
     def hook(self, calc: Calculator) -> None:
@@ -20,14 +27,14 @@ class AddCisFunction(CalculatorPlugin):
         calc.context.cis = self.cis
 
     def cis(self, *args, **kwargs):
-        """Implements the mathematical cis function"""
+        """Implements the mathematical ``cis`` function. Available in the calculator context. All parameters are passed to :meth:`sympy.sin` and :meth:`sympy.cos` functions"""
         return cos(*args, **kwargs) + I * sin(*args, **kwargs)
 
 
 class AddExternalLinks(CalculatorPlugin):
-    """Calculator plugin to add external links as desmos() and symbolab()"""
+    """Calculator plugin to add external links as ``desmos()`` and ``symbolab()``"""
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(self.__class__.__name__, -1)
 
     def hook(self, calc: Calculator) -> None:
@@ -36,18 +43,26 @@ class AddExternalLinks(CalculatorPlugin):
         calc.context.symbolab = self.symbolab
 
     def desmos(self) -> None:
-        """Opens the Desmos graphing calculator in the browser"""
+        """Opens the Desmos graphing calculator in the browser. Available in the calculator context"""
         webbrowser.open_new_tab("https://desmos.com/calculator")
 
     def symbolab(self) -> None:
-        """Opens the Desmos graphing calculator in the browser"""
+        """Opens the Desmos graphing calculator in the browser. Available in the calculator context"""
         webbrowser.open_new_tab("https://www.symbolab.com/")
 
 
 class AddNewtonsMethod(CalculatorPlugin):
-    """Calculator plugin to add the single variable Newton's method to the calculator context"""
+    """Calculator plugin to add the single variable Newton's method
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> newton(x*(x**2-1), 2, x, 2)
+        8192
+        ────
+        7117
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, -1)
 
     def hook(self, calc: Calculator) -> None:
@@ -55,7 +70,19 @@ class AddNewtonsMethod(CalculatorPlugin):
         calc.context.newton = self.newton
 
     def newton(self, f, x0, x=None, i: int = 1):
-        """Implements single variable Newton's method with the given expression f, the independent variable x (defaults to x in the context scope) and a point x0. Runs i times"""
+        """Implements single variable Newton's methodAvailable in the Calculator context.
+
+        Parameters
+        ----------
+        f : :class:`sympy.core.Expr`
+            The expression to perform Newton's method on
+        x0 : :class:`int`
+            The initial guess for the root
+        x : :class:`sympy.core.symbol.Symbol`
+            The independent variable x, defaults to x
+        i : :class:`int`
+            The amount of times to iterate
+        """
         if x is None:
             x = self.x
         df = diff(f, x)
@@ -65,9 +92,9 @@ class AddNewtonsMethod(CalculatorPlugin):
 
 
 class AddnIntegrate(CalculatorPlugin):
-    """Calculator plugin to add numerical integration to the calculator context"""
+    """Calculator plugin to add numerical integration. ``nintegrate(x)`` is equivalent to ``Integral(x).evalf()``"""
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(self.__class__.__name__, -1)
 
     def hook(self, calc: Calculator) -> None:
@@ -75,14 +102,24 @@ class AddnIntegrate(CalculatorPlugin):
         calc.context.nintegrate = self.nintegrate
 
     def nintegrate(self, *args, **kwargs):
-        """Returns the numerical value of integrate()"""
+        """Implements the numerical integration. Available in the Calculator context."""
         return Integral(*args, **kwargs).evalf()
 
 
 class AddOriginVectors(CalculatorPlugin):
-    """Calculator plugin to add the origin vectors to the calculator context"""
+    """Calculator plugin to add the origin vectors to the calculator context. o<n> is the origin vector in R^n
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> o3
+        ⎡0⎤
+        ⎢ ⎥
+        ⎢0⎥
+        ⎢ ⎥
+        ⎣0⎦
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, -1)
 
     def hook(self, calc: Calculator) -> None:

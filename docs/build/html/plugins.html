@@ -18,7 +18,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Default Plugins" href="defaultplugins.html" />
+    <link rel="next" title="Default Environment" href="default.html" />
     <link rel="prev" title="Calculator" href="calc.html" /> 
 </head>
 
@@ -43,7 +43,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="building.html">Building with SymCalc</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="calc.html">Calculator</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Plugins</a></li>
-<li class="toctree-l2"><a class="reference internal" href="defaultplugins.html">Default Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="default.html">Default Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="testing.html">Testing</a></li>
 </ul>
 </li>
@@ -81,24 +81,22 @@
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.</span></span><span class="sig-name descname"><span class="pre">CalculatorPlugin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin" title="Permalink to this definition"></a></dt>
 <dd><p>Plugins for the Calculator</p>
+<p>Initializes the plugin</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>priority</strong> (<em>int</em>) – </p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
 </ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.hook">
 <span class="sig-name descname"><span class="pre">hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.hook" title="Permalink to this definition"></a></dt>
-<dd><p>Called by the calculator when the plugin is added.</p>
+<dd><p>Called by the calculator when the plugin is added</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>calc</strong> (<a class="reference internal" href="calc.html#symcalc.Calculator" title="symcalc.calc.Calculator"><em>symcalc.calc.Calculator</em></a>) – </p>
+<dd class="field-odd"><p><strong>calc</strong> (<a class="reference internal" href="calc.html#symcalc.Calculator" title="symcalc.Calculator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a>) – The calculator for which this plugin was registered</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -109,10 +107,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.parse_command">
 <span class="sig-name descname"><span class="pre">parse_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.parse_command" title="Permalink to this definition"></a></dt>
-<dd><p>Parse the given command to the calculator. The given command may or may not be valid Python syntax. The given command can be modified in place</p>
+<dd><p>A command to be parsed by the plugin, meant to be overriden by subclasses. The given command may or may not be valid Python syntax, and the object can be modified in place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command to be parsed</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -123,27 +121,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.handle_command">
 <span class="sig-name descname"><span class="pre">handle_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.handle_command" title="Permalink to this definition"></a></dt>
-<dd><p>Parse the given command to the calculator. The given command is valid Python syntax. The given command can be modified in place</p>
+<dd><p>A command to be handled by the plugin, meant to be overriden by subclasses. The given command is guaranteed to be valid Python syntax, and the object can be modified in place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="symcalc.CalculatorPlugin.handle_runtime_error">
-<span class="sig-name descname"><span class="pre">handle_runtime_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.handle_runtime_error" title="Permalink to this definition"></a></dt>
-<dd><p>Handles the stderr output data printed by the given runtime error as a result of command</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p></li>
-<li><p><strong>data</strong> (<em>str</em>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command to be parsed</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -154,12 +135,12 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.handle_syntax_error_obj">
 <span class="sig-name descname"><span class="pre">handle_syntax_error_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.handle_syntax_error_obj" title="Permalink to this definition"></a></dt>
-<dd><p>Handles the syntax error as a result of command</p>
+<dd><p>The syntax error to be handled by the plugin, meant to be overriden by subclasses. The given command is guaranteed to be invalid Python syntax, and the object can be modified in place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p></li>
-<li><p><strong>exc</strong> (<em>SyntaxError</em>) – </p></li>
+<li><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command which caused the syntax error</p></li>
+<li><p><strong>exc</strong> (<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#SyntaxError" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SyntaxError</span></code></a>) – The resulting syntax error</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -171,12 +152,30 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.handle_syntax_error">
 <span class="sig-name descname"><span class="pre">handle_syntax_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.handle_syntax_error" title="Permalink to this definition"></a></dt>
-<dd><p>Handles the stderr output data printed by the given syntax error as a result of command</p>
+<dd><p>The syntax error stderr output to be handled by the plugin, meant to be overriden by subclasses. The given command is guaranteed to be invalid Python syntax, and the object can be modified in place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p></li>
-<li><p><strong>data</strong> (<em>str</em>) – </p></li>
+<li><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command which caused the syntax error</p></li>
+<li><p><strong>exc</strong> (<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#SyntaxError" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SyntaxError</span></code></a>) – The stderr output from the resulting syntax error</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.CalculatorPlugin.handle_runtime_error">
+<span class="sig-name descname"><span class="pre">handle_runtime_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.handle_runtime_error" title="Permalink to this definition"></a></dt>
+<dd><p>The stderr output to be handled by the plugin, meant to be overriden by subclasses. The given command is guaranteed to be valid Python syntax, and the object can be modified in place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command which caused the runtime error</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The stderr data</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -202,10 +201,14 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.command_success">
 <span class="sig-name descname"><span class="pre">command_success</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.command_success" title="Permalink to this definition"></a></dt>
-<dd><p>Actions taken after a successful command</p>
+<dd><p>Notifies the plugin after a successful command.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <a class="reference internal" href="calc.html#symcalc.Calculator" title="symcalc.Calculator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a> will not respect <a class="reference internal" href="calc.html#symcalc.CalculatorCommand.abort" title="symcalc.CalculatorCommand.abort"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CalculatorCommand.abort</span></code></a>, or <a class="reference internal" href="calc.html#symcalc.CalculatorCommand.resend_command" title="symcalc.CalculatorCommand.resend_command"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CalculatorCommand.resend_command</span></code></a> after the plugins are notified.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command that was executed</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -216,10 +219,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.command_fail">
 <span class="sig-name descname"><span class="pre">command_fail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.command_fail" title="Permalink to this definition"></a></dt>
-<dd><p>Actions taken after a failed command</p>
+<dd><p>Notifies the plugin after a failed command. This could be due to <code class="docutils literal notranslate"><span class="pre">SIGINT</span></code>, an uncaught error, or other failing conditions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command that was executed</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -236,7 +239,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="calc.html" class="btn btn-neutral float-left" title="Calculator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="defaultplugins.html" class="btn btn-neutral float-right" title="Default Plugins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="default.html" class="btn btn-neutral float-right" title="Default Environment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

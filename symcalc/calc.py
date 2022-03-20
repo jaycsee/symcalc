@@ -18,10 +18,18 @@ from .plugin import CalculatorPlugin
 
 
 class Calculator:
-    """A calculator based on SymPy"""
+    """An interactive console containing plugins and the console"""
 
     def __init__(self, context: CalculatorContext = None, command_prefix: str = "/"):
-        """Initializes the calculator"""
+        """Initializes the calculator
+
+        Parameters
+        ----------
+        context : :class:`CalculatorContext`
+            The context that the calculator will use. If ``None``, a new context will be generated. Defaults to ``None``
+        command_prefix : :class:`str`
+            The prefix for commands to be interpreted as setting toggles. Defaults to ``"/"``
+        """
         # Prepare the calculator context
         self.context = context if context is not None else CalculatorContext()
         # Settings
@@ -41,8 +49,18 @@ class Calculator:
         self.plugin_priorities = defaultdict(list)
         self.plugins = []
 
-    def handle_error_output(self, data) -> None:
-        """Method for handling error output passed to the console interpreter. Given to plugins"""
+    def handle_error_output(self, data: str) -> None:
+        """Method for handling stderr output written to the console interpreter. The data is generally passed to plugins.
+
+        Parameters
+        ----------
+        data : :class:`str`
+            The data written to stderr
+
+        Returns
+        -------
+        None
+        """
         if self.strict_python:
             print(data, end="")
             return
@@ -58,7 +76,19 @@ class Calculator:
             print(data, end="")
 
     def register_plugin(self, plugin: CalculatorPlugin) -> Calculator:
-        """Register the given plugin. Returns itself for chaining"""
+        """
+        Register the given plugin
+
+        Parameters
+        ----------
+        plugin : :class:`CalculatorPlugin`
+            The plugin to register
+
+        Returns
+        -------
+        :class:`Calculator`
+            ``self`` for chaining
+        """
         self.plugin_priorities[plugin.priority].append(plugin)
         plugin.hook(self)
         self.plugins = []  # type: list[CalculatorPlugin]
@@ -69,7 +99,13 @@ class Calculator:
         return self
 
     def notify_plugins_parse(self, command_data: CalculatorCommand) -> None:
-        """Notify all plugins of a command to be parsed"""
+        """Notify all plugins of a command to be parsed
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
         for plugin in self.plugins:
             plugin.parse_command(command_data)
             if command_data.abort:
@@ -77,7 +113,13 @@ class Calculator:
                 return
 
     def notify_plugins_command(self, command_data: CalculatorCommand) -> None:
-        """Notify all plugins of a command to be processed"""
+        """Notify all plugins of a command to be processed
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
         for plugin in self.plugins:
             plugin.handle_command(command_data)
             if command_data.abort:
@@ -85,7 +127,13 @@ class Calculator:
                 return
 
     def notify_plugins_resend(self, command_data: CalculatorCommand) -> None:
-        """Notify all plugins of a resent command to be processed"""
+        """Notify all plugins of a resent command to be processed
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
         for plugin in self.plugins:
             plugin.handle_resend(command_data)
             if command_data.abort:
@@ -93,7 +141,13 @@ class Calculator:
                 return
 
     def notify_plugins_syntax_error(self, command_data: CalculatorCommand, data: str, exc: SyntaxError) -> None:
-        """Notify all plugins of a syntax error"""
+        """Notify all plugins of a syntax error
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
         for plugin in self.plugins:
             plugin.handle_syntax_error_obj(command_data, exc)
             plugin.handle_syntax_error(command_data, data)
@@ -104,7 +158,13 @@ class Calculator:
                 return
 
     def notify_plugins_runtime_error(self, command_data: CalculatorCommand, data: str) -> None:
-        """Notify all plugins of a runtime error"""
+        """Notify all plugins of a runtime error
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
         for plugin in self.plugins:
             plugin.handle_runtime_error(command_data, data)
             if command_data.abort:
@@ -114,19 +174,42 @@ class Calculator:
                 return
 
     def notify_plugins_success(self, command_data: CalculatorCommand) -> None:
-        """Notify all plugins of a successful command"""
+        """Notify all plugins of a successful command
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
         command_data.success = True
         for plugin in self.plugins:
             plugin.command_success(command_data)
 
     def notify_plugins_fail(self, command_data: CalculatorCommand) -> None:
-        """Notify all plugins of a failed command"""
+        """Notify all plugins of a failed command
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
         command_data.success = False
         for plugin in self.plugins:
             plugin.command_fail(command_data)
 
     def mksym(self, s: str, /, **kwargs) -> Symbol | tuple[Symbol]:
-        """Makes symbol(s) in the calculator context"""
+        """Makes symbol(s) in the calculator context
+
+        Parameters
+        ----------
+        s : :class:`str`
+            Either a single word or a comma/space separated string containing multiple words. All words are created as a symbol in the :class:`CalculatorContext`
+
+        Returns
+        -------
+        :class:`Symbol` | :class:`tuple[Symbol]`
+            The symbol or list of symbols that were created
+        """
         syms = symbols(s, **kwargs)
         try:
             for name in syms:
@@ -136,11 +219,40 @@ class Calculator:
         return syms
 
     def getsym(self, s: str) -> Any:
+        """Gets a variable in the calculator context
+
+        Parameters
+        ----------
+        s : :class:`str`
+            The variable to retrieve from the calculator context
+
+        Raises
+        ------
+        :class:`KeyError`
+            The given variable name was not found in the calculator context
+
+        Returns
+        -------
+        Any
+            The retrieved variable
+        """
         if s in __builtins__.keys():
             return __builtins__[s]
         return self.context.__dict__[s]
 
-    def chksym(self, s: str, strict: bool = False) -> bool:
+    def chksym(self, s: str) -> bool:
+        """Checks if a variable exists in the calculator context
+
+        Parameters
+        ----------
+        s : :class:`str`
+            The variable to check in the calculator context
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the variable was found
+        """
         if s == "_":
             return False
         return s in self.context.__dict__.keys() or s in __builtins__.keys()
@@ -151,7 +263,18 @@ class Calculator:
         self.incomplete_command = None
 
     def command(self, command: str) -> bool:
-        """Push a command to the calculator."""
+        """Push a command to the calculator.
+
+        Parameters
+        ----------
+        command : :class:`str`
+            The command to be pushed to the calculator
+
+        Returns
+        -------
+        :class:`bool`
+            ``True`` if more input is required to complete the command, ``False`` otherwise. See :class:`code.InteractiveConsole`
+        """
         if self.incomplete_command is not None:
             try:
                 self.incomplete_command.buffer.append(command)
@@ -252,11 +375,28 @@ class Calculator:
             return False
 
     def interpret(self, line: str) -> None:
-        """Interpret the given line as input. Should be valid Python"""
+        """Interpret the given line as input
+
+        Parameters
+        ----------
+        line : :class:`str`
+            The line to push to the underlying :class:`code.InteractiveConsole`. Must be valid Python
+        """
         self.console.push(line)
 
     def interact(self, prompt: str = "Calculator") -> NoReturn:
-        """Start an interactive prompt with the calculator. Exits on EOF, in which case the program should clean up and exit"""
+        """Start an interactive prompt with the calculator
+
+        Parameters
+        ----------
+        prompt : :class:`str`
+            The prefix to each line on each interaction. Defaults to ``"Calculator"``
+
+        Returns
+        -------
+        :class:`NoReturn`
+            Exits only on EOF, thus the program should not be expected to return. If it does, only cleanup and a swift exist should occur.
+        """
         init_printing(wrap_line=False)
         while True:
             try:

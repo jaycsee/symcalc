@@ -12,9 +12,10 @@
 #
 import os
 import sys
+import sympy
 
 sys.path.insert(0, os.path.abspath("../.."))
-print(sys.path)
+sys.path.append(os.path.abspath("extensions"))
 
 
 # -- Project information -----------------------------------------------------
@@ -34,8 +35,12 @@ release = "0.1"
 # ones.
 
 
-extensions = ["sphinx_rtd_theme", "sphinx.ext.autodoc", "sphinx.ext.autosummary"]
+extensions = ["sphinx_rtd_theme", "sphinx.ext.autodoc", "sphinx.ext.intersphinx", "sphinx.ext.napoleon"]
 autodoc_typehints = "description"
+autoclass_content = "both"
+numpydoc_show_class_members = False
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None), "sympy": ("https://docs.sympy.org/latest", None)}
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

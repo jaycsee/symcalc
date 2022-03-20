@@ -11,9 +11,27 @@ from ..plugin import CalculatorPlugin
 
 
 class PrintCommand(CalculatorPlugin):
-    """Calculator plugin to print the resulting command after processing to stdout"""
+    """Calculator plugin to print the resulting command after processing to stdout
 
-    def __init__(self) -> None:
+    With the default plugin :class:`AutoExact` enabled:
+
+    .. code-block::
+
+        Calculator >>> /pc
+        Calculator >>> 1.2
+        Parsed Command: 1.2
+        Handled Command: sympify('1.2', rational=True)
+        6/5
+        Calculator >>> 324.12
+        Parsed Command: 324.12
+        Handled Command: sympify('324.12', rational=True)
+        8103
+        ────
+         25
+
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, 999)
         self.settings_name = "print_command"
         self.settings_toggle = "pc"
@@ -30,23 +48,65 @@ class PrintCommand(CalculatorPlugin):
         print(f"Parsed Command: {command.command}")
 
     def handle_command(self, command: CalculatorCommand) -> None:
+        """Prints the command if the setting is set"""
         if not command.calc.settings[self.settings_name]:
             return
         print(f"Handled Command: {command.command}")
 
     def handle_resend(self, command: CalculatorCommand) -> None:
+        """Prints the command if the setting is set"""
         if not command.calc.settings[self.settings_name]:
             return
         print(f"Resent command: {command.command}")
 
 
 class PerformanceMonitor(CalculatorPlugin):
-    """Calculator plugin to profile the performance of the plugins installed"""
+    """Calculator plugin to profile the performance of the plugins installed
+
+    With the default plugin :class:`AutoExact` enabled:
+
+    .. code-block::
+
+        Calculator >>> /pp
+        Calculator >>> 1.2
+        ----------[ Output ]----------
+        6/5
+        Decimal: 1.20000000000000
+        Result stored in out[1]
+        ----------[ Performance ]----------
+        Events:
+        - Parsing `1.2`
+        - Handling `1.2`
+        - Executing `sympify('1.2', rational=True)`
+        - Successfully executed command
+        Profile:
+        - Command parsing took 0.0 ns
+        - Command handling took 0.51 ms
+        - Command execution took 1.5 ms
+        - Success handling took 1.52 ms
+        Calculator >>> 324.12
+        ----------[ Output ]----------
+        8103
+        ────
+         25
+        ----------[ Performance ]----------
+        Events:
+        - Parsing `324.12`
+        - Handling `324.12`
+        - Executing `sympify('324.12', rational=True)`
+        - Successfully executed command
+        Profile:
+        - Command parsing took 0.497 ms
+        - Command handling took 0.519 ms
+        - Command execution took 1.51 ms
+        - Success handling took 0.991 ms
+
+    """
 
     class PerformanceEvent:
         """Data class to log the data of a single event"""
 
-        def __init__(self, time_name: str, event_name: str) -> None:
+        def __init__(self, time_name: str, event_name: str):
             self.time_name = time_name
             self.event_name = event_name
             self.command = None
@@ -95,7 +155,7 @@ class PerformanceMonitor(CalculatorPlugin):
     class PerformanceProfile:
         """Data class to store the events of a calculator command"""
 
-        def __init__(self) -> None:
+        def __init__(self):
             self.clear()
 
         def start_event(self, *args, **kwargs) -> PerformanceMonitor.PerformanceEvent:
@@ -151,7 +211,7 @@ class PerformanceMonitor(CalculatorPlugin):
     class PerformanceMonitorHelper(CalculatorPlugin):
         """Helper plugin for PerformanceMonitor"""
 
-        def __init__(self, profile: PerformanceMonitor.PerformanceProfile, settings_key: str) -> None:
+        def __init__(self, profile: PerformanceMonitor.PerformanceProfile, settings_key: str):
             super().__init__(self.__class__.__name__, 9999)
             self.profile = profile
             self.settings_key = settings_key
@@ -190,7 +250,7 @@ class PerformanceMonitor(CalculatorPlugin):
             if command.calc.settings[self.settings_key]:
                 self.profile.print()
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(self.__class__.__name__, 0)
         self.settings_name = "performance_monitor"
         self.settings_toggle = "pp"

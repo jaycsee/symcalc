@@ -7,22 +7,32 @@ from .calc import Calculator
 class CalculatorCommand:
     """Data for a single calculator command"""
 
-    def __init__(self, calc: Calculator, command: str) -> None:
+    def __init__(self, calc: Calculator, command: str):
         self.calc = calc
         self._command = command
         self._command_ast = None
         self._command_symtable = None
         self._valid_syntax = False
         self.command_original = command
+        """The original command text before plugin processing"""
         self.multiline_command = False
+        """Whether the command is a multi-line command. Generally plugins never read ``True`` """
+        self.buffer = None
+        """The line buffer for a multi-line command"""
         self.abort = False
         self.resend_command = False
         self.print_error = False
         self.success = False
-        self.buffer = None
 
     @property
     def command(self) -> str:
+        """The plaintext command. Setting this with :attr:`CalculatorCommand.valid_syntax` ``True`` updates the symbol table and the AST
+
+        Raises
+        ------
+        :class:`SyntaxError`
+            When setting the command to one with invalid Python syntax when  :attr:`CalculatorCommand.valid_syntax` is ``True``
+        """
         return self._command
 
     @command.setter
@@ -34,6 +44,13 @@ class CalculatorCommand:
 
     @property
     def valid_syntax(self) -> bool:
+        """Whether the plaintext command is valid syntax. Setting this to ``True`` updates the symbol table and the AST
+
+        Raises
+        ------
+        :class:`SyntaxError`
+            If :attr:`CalculatorCommand.command` is not valid Python syntax when setting to `True`
+        """
         return self._valid_syntax
 
     @valid_syntax.setter
@@ -44,7 +61,14 @@ class CalculatorCommand:
             self._command_symtable = symtable.symtable(self._command, filename="<input>", compile_type="single")
 
     @property
-    def command_ast(self) -> ast.AST | None:
+    def command_ast(self) -> ast.AST:
+        """The AST of the command. Setting this implies :attr:`CalculatorCommand.valid_syntax` and updates the plaintext command
+
+        Raises
+        ------
+        ValueError
+            If :attr:`CalculatorCommand.valid_syntax` is ``False`` during read attempt
+        """
         if not self._valid_syntax:
             raise ValueError("Attempted to get the AST of a command without valid syntax")
         return self._command_ast
@@ -54,12 +78,17 @@ class CalculatorCommand:
         self._valid_syntax = True
         self.command = ast.unparse(value)
 
-    def ast_update(self) -> None:
-        """Tells the command to update if the AST was modified in place"""
-        self._command = ast.unparse(self._command_ast)
-
     @property
-    def command_symtable(self) -> symtable.SymbolTable | None:
+    def command_symtable(self) -> symtable.SymbolTable:
+        """The symbol table of the command.
+
+        Raises
+        ------
+        ValueError
+            If :attr:`CalculatorCommand.valid_syntax` is ``False`` during read attempt
+        """
+        if not self._valid_syntax:
+            raise ValueError("Attempted to get the AST of a command without valid syntax")
         return self._command_symtable
 
     def __str__(self) -> str:

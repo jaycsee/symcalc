@@ -12,12 +12,23 @@ from ..plugin import CalculatorPlugin
 
 
 class AutoExact(CalculatorPlugin):
-    """Calculator plugin to convert numbers to their SymPy exact form"""
+    """Calculator plugin to convert numbers to their SymPy exact form
+
+    .. code-block::
+
+        Calculator >>> 1.2
+        6/5
+        Calculator >>> 324.12
+        8103
+        ────
+         25
+
+    """
 
     class CheckConstants(ast.NodeTransformer):
         """Checks the ast for constants and automatically converts them to sympy objects"""
 
-        def __init__(self) -> None:
+        def __init__(self):
             self._current_command = None
 
         @property
@@ -34,7 +45,7 @@ class AutoExact(CalculatorPlugin):
                 return ast.Call(ast.Name(id="sympify", ctx=ast.Load()), [ast.Constant(self.lines[node.lineno - 1][node.col_offset : node.end_col_offset])], [ast.keyword("rational", ast.Constant(True))])
             return self.generic_visit(node)
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__(self.__class__.__name__, 40)
         self.settings_name = "auto_exact"
         self.settings_toggle = "ax"
@@ -54,9 +65,22 @@ class AutoExact(CalculatorPlugin):
 
 
 class AutoSymbol(CalculatorPlugin):
-    """Calculator plugin to automatically assume that undefined variables are symbols"""
+    """Calculator plugin to automatically assume that undefined variables are symbols
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> x
+        New symbol: x
+        x
+        Calculator >>> x
+        x
+        Calculator >>> yz
+        New symbol: yz
+        yz
+
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, 21)
         self.settings_name = "auto_symbol"
         self.settings_toggle = "as"
@@ -71,6 +95,7 @@ class AutoSymbol(CalculatorPlugin):
     def handle_command(self, command: CalculatorCommand) -> None:
         if not command.calc.settings[self.settings_name]:
             return
+        # Walk the AST and check for undefined symbols
         for n in ast.walk(command.command_ast):
             if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and not command.calc.chksym(n.id) and not n.id.startswith("_"):
                 if command.calc.settings[self.settings_name + "_char"]:

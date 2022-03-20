@@ -10,8 +10,31 @@ from .plugins.plugins_reminders import *
 
 
 class DefaultCalculator(Calculator):
+    """A :class:`Calculator` that contains the default environment.
+    Running the module is equivalent to
+
+    >>> import symcalc
+    >>> symcalc.DefaultCalculator().register_default_plugins().interact("Demo")
+    Demo >>>
+    """
+
+    def __init__(self, *args, **kwargs):
+        """Initializes the calculator. See :class:`Calculator`
+
+        .. note:: This does **NOT** automatically register the default plugins. Call :meth:`register_default_plugins`
+        """
+        super().__init__(*args, **kwargs)
+        self.registered = False
+
     def register_default_plugins(self) -> DefaultCalculator:
-        """Register the default plugins. Returns itself for chaining"""
+        """Registers the default plugins.
+
+        Returns
+        -------
+        :class:`DefaultCalculator`
+            Returns ``self`` for chaining
+        """
+        self.registered = True
         defaultplugins = [
             PerformanceMonitor,
             PrintCommand,
@@ -35,3 +58,9 @@ class DefaultCalculator(Calculator):
         for p in defaultplugins:
             self.register_plugin(p())
         return self
+
+    def interact(self, *args, **kwargs):
+        """See :meth:`Calculator.interact`"""
+        if not self.registered:
+            print("The default plugins were not regstered. Did you mean to use the Calculator class or forget to call register_default_plugins()?")
+        super().interact(*args, **kwargs)

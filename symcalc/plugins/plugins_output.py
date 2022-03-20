@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re as regex
+from typing import Any
 
 import sympy
 from sympy import *
@@ -11,9 +12,22 @@ from ..plugin import CalculatorPlugin
 
 
 class OutputDecimal(CalculatorPlugin):
-    """Calculator plugin to automatically display the decimal representation of the result"""
+    """Calculator plugin to automatically display the decimal representation of the result
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> 3+3j
+        3 + 3⋅ⅈ
+        Decimal: 3.0 + 3.0⋅ⅈ
+        Calculator >>> 123/321
+        41
+        ───
+        107
+        Decimal: 0.383177570093458
+
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, 200)
         self.settings_name = "output_decimal"
         self.settings_toggle = "od"
@@ -33,11 +47,27 @@ class OutputDecimal(CalculatorPlugin):
         command.calc.interpret("try:\n\toutput_decimal(_)\nexcept NameError: pass\n")
 
     def check_decimal(self, s: str) -> str:
-        """Returns if the given string if it is a valid decimal representation of a number, otherwise None"""
+        """Returns if the given string if it is a valid decimal representation of a number
+
+        Parameters
+        ----------
+        s : :class:`str`
+            The string to check
+
+        Returns
+        -------
+        :class:`string` | None
+            ``s`` if it is a valid decimal representation, otherwise ``None``"""
         return s if (regex.match(r"^-?\d+(\.\d+)?(e-?\d+)?(\*I)?$", s) or regex.match(r"^-?\d+(\.\d+)(e-?\d+)?\s?[-\+]\s?\d+(\.\d+)?(e-?\d+)?\*I$", s)) else None
 
-    def output_decimal(self, output) -> None:
-        """Prints the decimal of the given output"""
+    def output_decimal(self, output: Any) -> None:
+        """Prints the decimal of the given output. Available in the calculator context
+
+        Parameters
+        ----------
+        output : :class:`Any`
+            The output to be printed, if it is a valid decimal
+        """
         try:
             if isinstance(output, sympy.matrices.dense.MutableDenseMatrix) and output.shape[1] == 1:
                 output = list(output)
@@ -70,9 +100,18 @@ class OutputDecimal(CalculatorPlugin):
 
 
 class OutputStore(CalculatorPlugin):
-    """Calculator plugin to automatically display the decimal representation of the result"""
+    """Calculator plugin to automatically store the result in an array
 
-    def __init__(self) -> None:
+    .. code-block::
+
+        Calculator >>> 2x
+        2⋅x
+        Result stored in out[1]
+        Calculator >>> out[1]
+        2⋅x
+    """
+
+    def __init__(self):
         super().__init__(self.__class__.__name__, 210)
         self.settings_name = "output_store"
         self.settings_toggle = "os"
@@ -100,7 +139,8 @@ class OutputStore(CalculatorPlugin):
         if output is self.context.out or output is None:
             return
         if output in self.context.out and (n := self.context.out.index(output)):
-            print(f"Result in out[{n}]")
+            if n != len(self.context.out) - 1:
+                print(f"Result in out[{n}]")
             return
         if "__iter__" in dir(output):
             checks = list(output)

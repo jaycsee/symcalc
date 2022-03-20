@@ -8,11 +8,11 @@ Building with SymCalc
 
    calc
    plugins
-   defaultplugins
+   default
    testing
 
 SymCalc can be customized for your own needs.
  - The :doc:`calc` class
  - Building your own :doc:`plugins`
- - The included :doc:`defaultplugins`
+ - The included :doc:`default`
  - :doc:`testing`
