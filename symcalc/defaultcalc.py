@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import importlib
+import os
+
+from . import plugins
 from .calc import *
 from .plugins.plugins_additions import *
 from .plugins.plugins_functionality import *
@@ -85,6 +89,13 @@ class DefaultCalculator(Calculator):
         """
         super().__init__(*args, **kwargs)
         self.registered = False
+        self.defaultplugins = []
+
+        for x in [f for f in plugins.__dir__() if f.startswith("plugins_")]:
+            m = importlib.import_module(f".{x}", "symcalc.plugins")
+            for c in m.__dir__():
+                if isinstance(t := m.__getattribute__(c), type(DefaultCalculator)) and issubclass(t, CalculatorPlugin) and t != CalculatorPlugin:
+                    self.defaultplugins.append(t)
 
     def register_default_plugins(self) -> DefaultCalculator:
         """Registers the default plugins.
@@ -95,28 +106,7 @@ class DefaultCalculator(Calculator):
             Returns ``self`` for chaining
         """
         self.registered = True
-        defaultplugins = [
-            PerformanceMonitor,
-            PrintCommand,
-            AddCisFunction,
-            AddExternalLinks,
-            AddFactorDB,
-            AddnIntegrate,
-            AddNewtonsMethod,
-            AddOriginVectors,
-            NotationConstants,
-            NotationExponent,
-            AutoExact,
-            NotationInterval,
-            NotationMultiply,
-            AutoSymbol,
-            NotationVector,
-            OutputDecimal,
-            OutputStore,
-            ReminderMathConstants,
-            ReminderTwoLetterSymbol,
-        ]
-        for p in defaultplugins:
+        for p in self.defaultplugins:
             self.register_plugin(p())
         return self
 
