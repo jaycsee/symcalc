@@ -33,7 +33,7 @@ class AddCisFunction(CalculatorPlugin):
 
 
 class AddExternalLinks(CalculatorPlugin):
-    """Calculator plugin to add external links as ``desmos()`` and ``symbolab()``"""
+    """Calculator plugin to add external links to Desmos, Symbolab, Wolfram|Alpha and SymPy Gamma"""
 
     def __init__(self):
         super().__init__(self.__class__.__name__, -1)
@@ -48,8 +48,16 @@ class AddExternalLinks(CalculatorPlugin):
         webbrowser.open_new_tab("https://desmos.com/calculator")
 
     def symbolab(self) -> None:
-        """Opens the Desmos graphing calculator in the browser. Available in the calculator context"""
+        """Opens Symbolab in the browser. Available in the calculator context"""
         webbrowser.open_new_tab("https://www.symbolab.com/")
+
+    def wolframalpha(self) -> None:
+        """Opens Wolfram|Alpha in the browser. Available in the calculator context"""
+        webbrowser.open_new_tab("https://www.wolframalpha.com/")
+
+    def sympygamma(self) -> None:
+        """Opens SymPy Gamma in the browser. Available in the calculator context"""
+        webbrowser.open_new_tab("https://gamma.sympy.org/")
 
 
 class AddFactorDB(CalculatorPlugin):
