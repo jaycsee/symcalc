@@ -10,6 +10,8 @@ Documentation is built with Sphinx and can be found at `docs/build/html/index.ht
 
 Installation is not required to use the calculator. Simply clone this repository and run `interact.py` to get started. If you wish to install the package to create your own applications, review and run the `install.py` script. This package is not available on PyPI.
 
+This repository makes use of abstract syntax trees, which are version-specific features of Python. Because of this, the calculator is only tested to work on Python 3.10, and is unlikely to work in previous versions. Please update Python to the latest version.
+
 ## Getting Started
 
 SymCalc is built on SymPy, so anything available in SymPy is available as well. Running `interact.py` enables the default environment, which accepts and understands natural math input. For examples, see the documentation in the repository or the SymPy documentation.
