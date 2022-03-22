@@ -171,7 +171,7 @@ class NotationInterval(CalculatorPlugin):
 
 
 class NotationMultiply(CalculatorPlugin):
-    """Calculator plugin to allow for multiplication by juxtaposition
+    """Calculator plugin to allow for multiplication by juxtaposition with brackets or spaces
 
     .. code-block::
 
