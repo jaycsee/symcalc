@@ -242,7 +242,7 @@ class NotationMultiply(CalculatorPlugin):
             while end > 0:
                 found = False
                 for i in range(end):
-                    if self.calc.chksym(data[i:end]):
+                    if data[i:end] and self.calc.chksym(data[i:end]) or regex.match(r"^[a-zA-Z]+_?[0-9]+$", data[i:end]):
                         if (ret or end != len(data)) and self.calc.chksym(data[i:end]) and type(self.calc.getsym(data[i:end])) in self.ignored_types_not_last:
                             return [original_data]
                         if end != len(data):
