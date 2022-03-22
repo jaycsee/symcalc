@@ -200,7 +200,18 @@ class NotationMultiply(CalculatorPlugin):
 
         def __init__(self, calc: Calculator):
             self.calc = calc
-            self.ignored_types_not_last = set([type(sympy.Basic), sympy.core.function.FunctionClass, type(lambda x: x), type(sympify), type(type), type(sympy), sympy.printing.printer._PrintFunction])
+            self.ignored_types_not_last = set(
+                [
+                    type(sympy.Basic),
+                    sympy.core.function.FunctionClass,
+                    type(lambda x: x),
+                    type(sympify),
+                    type(type),
+                    type(sympy),
+                    sympy.printing.printer._PrintFunction,
+                    type(ord),
+                ]
+            )
 
         def visit_Name(self, node: ast.Name) -> ast.AST | None:
             if self.calc.chksym(node.id) or not isinstance(node.ctx, ast.Load):

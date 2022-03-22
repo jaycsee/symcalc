@@ -107,6 +107,63 @@ Running the module is equivalent to</p>
 <span class="go">Demo &gt;&gt;&gt;</span>
 </pre></div>
 </div>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; solve(x**2+4x-7)
+New symbol: x
+[-2 + √11, -√11 - 2]
+Decimals: [1.3166, -5.3166]
+Result stored in out[1]
+
+Calculator &gt;&gt;&gt; solveset(sin(x))
+{2⋅n⋅π │ n ∊ ℤ} ∪ {2⋅n⋅π + π │ n ∊ ℤ}
+Result stored in out[2]
+
+Calculator &gt;&gt;&gt; diff(2x**2sin(x))
+2
+2⋅x ⋅cos(x) + 4⋅x⋅sin(x)
+Result stored in out[3]
+
+Calculator &gt;&gt;&gt; _.subs(x, 3)
+18⋅cos(3) + 12⋅sin(3)
+Decimal: -16.1264248420896
+Result stored in out[4]
+
+Calculator &gt;&gt;&gt; integrate(sin(x)**2, (x,0,2))
+sin(2)⋅cos(2)
+- ───────────── + 1
+        2
+Decimal: 1.18920062382698
+Result stored in out[5]
+
+Calculator &gt;&gt;&gt; v[1,2,3]+v[4,5,6]
+⎡5⎤
+⎢ ⎥
+⎢7⎥
+⎢ ⎥
+⎣9⎦
+Result stored in out[6]
+
+Calculator &gt;&gt;&gt; m[1,2,3\3,2,1\5,5,9]
+⎡1  2  3⎤
+⎢       ⎥
+⎢3  2  1⎥
+⎢       ⎥
+⎣5  5  9⎦
+Result stored in out[7]
+
+Calculator &gt;&gt;&gt; _.det()
+-16
+Result stored in out[8]
+
+Calculator &gt;&gt;&gt; out[7]*out[6]
+⎡46 ⎤
+⎢   ⎥
+⎢38 ⎥
+⎢   ⎥
+⎣141⎦
+Result stored in out[9]
+</pre></div>
+</div>
 <p>Initializes the calculator. See <a class="reference internal" href="calc.html#symcalc.Calculator" title="symcalc.Calculator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

@@ -143,7 +143,11 @@ class OutputStore(CalculatorPlugin):
                 print(f"Result in out[{n}]")
             return
         if "__iter__" in dir(output):
-            checks = list(output)
+            checks = []
+            for i, c in enumerate(output):
+                checks.append(c)
+                if i == 10:
+                    break
         else:
             checks = [output]
         for o in checks:

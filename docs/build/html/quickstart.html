@@ -41,7 +41,10 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="gettingstarted.html">Getting Started</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Quickstart and Examples</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Quickstart and Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="capabilities.html">Capabilities</a></li>
 </ul>
 </li>
@@ -75,6 +78,80 @@
              
   <section id="quickstart-and-examples">
 <h1>Quickstart and Examples<a class="headerlink" href="#quickstart-and-examples" title="Permalink to this headline"></a></h1>
+<dl class="simple">
+<dt>The default environment is the best way to use the calculator. To get started, do one of the following</dt><dd><ul class="simple">
+<li><p>In the repository directory, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">symcalc</span></code></p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">interact.py</span></code></p></li>
+<li><p>Install the package and run <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">symcalc;</span> <span class="pre">symcalc.use()</span></code></p></li>
+</ul>
+</dd>
+<dt>In the default environment, the calculator will understand normal mathmatical notation.</dt><dd><ul class="simple">
+<li><p>Symbol definitions are not necessary. All unknown variables are assumed to be symbols.</p></li>
+<li><p>Multiplication by juxtaposition is supported. <code class="docutils literal notranslate"><span class="pre">2ab</span></code> will be <code class="docutils literal notranslate"><span class="pre">2*a*b`</span></code> if <code class="docutils literal notranslate"><span class="pre">a</span></code> is defined and <code class="docutils literal notranslate"><span class="pre">ab</span></code> is not.</p></li>
+<li><p>Numbers entered are exact: <code class="docutils literal notranslate"><span class="pre">1.2</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">6/5</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; solve(x**2+4x-7)
+New symbol: x
+[-2 + √11, -√11 - 2]
+Decimals: [1.3166, -5.3166]
+Result stored in out[1]
+
+Calculator &gt;&gt;&gt; solveset(sin(x))
+{2⋅n⋅π │ n ∊ ℤ} ∪ {2⋅n⋅π + π │ n ∊ ℤ}
+Result stored in out[2]
+
+Calculator &gt;&gt;&gt; diff(2x**2sin(x))
+  2
+2⋅x ⋅cos(x) + 4⋅x⋅sin(x)
+Result stored in out[3]
+
+Calculator &gt;&gt;&gt; _.subs(x, 3)
+18⋅cos(3) + 12⋅sin(3)
+Decimal: -16.1264248420896
+Result stored in out[4]
+
+Calculator &gt;&gt;&gt; integrate(sin(x)**2, (x,0,2))
+  sin(2)⋅cos(2)
+- ───────────── + 1
+        2
+Decimal: 1.18920062382698
+Result stored in out[5]
+
+Calculator &gt;&gt;&gt; v[1,2,3]+v[4,5,6]
+⎡5⎤
+⎢ ⎥
+⎢7⎥
+⎢ ⎥
+⎣9⎦
+Result stored in out[6]
+
+Calculator &gt;&gt;&gt; m[1,2,3\\3,2,1\\5,5,9]
+⎡1  2  3⎤
+⎢       ⎥
+⎢3  2  1⎥
+⎢       ⎥
+⎣5  5  9⎦
+Result stored in out[7]
+
+Calculator &gt;&gt;&gt; _.det()
+-16
+Result stored in out[8]
+
+Calculator &gt;&gt;&gt; out[7]*out[6]
+⎡46 ⎤
+⎢   ⎥
+⎢38 ⎥
+⎢   ⎥
+⎣141⎦
+Result stored in out[9]
+</pre></div>
+</div>
+<p>For a more thorough list of the calculator’s capabilities, see <a class="reference internal" href="capabilities.html"><span class="doc">Capabilities</span></a> or SymPy documentation.</p>
+</section>
 </section>
 
 

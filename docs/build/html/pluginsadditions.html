@@ -149,6 +149,43 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="symcalc.plugins.plugins_additions.AddFactorDB">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_additions.</span></span><span class="sig-name descname"><span class="pre">AddFactorDB</span></span><a class="headerlink" href="#symcalc.plugins.plugins_additions.AddFactorDB" title="Permalink to this definition"></a></dt>
+<dd><p>Adds the API for FactorDB, a website that provides factors for numbers.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Calculator</span> <span class="o">&gt;&gt;&gt;</span> <span class="n">factordb</span><span class="p">(</span><span class="mi">29928893193015398318666605389344864349536211</span><span class="p">)</span>
+<span class="n">FactorDBResponse</span><span class="p">(</span><span class="mi">29928893193015398318666605389344864349536211</span> <span class="ow">is</span> <span class="n">composite</span><span class="p">,</span> <span class="n">fully</span> <span class="n">factored</span><span class="p">)</span>
+    <span class="n">Factors</span><span class="p">:</span> <span class="p">{</span><span class="mi">3</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">648181</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1399202008951362319095335248405636807</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Initializes the plugin</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.plugins.plugins_additions.AddFactorDB.factordb">
+<span class="sig-name descname"><span class="pre">factordb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.plugins.plugins_additions.AddFactorDB.factordb" title="Permalink to this definition"></a></dt>
+<dd><p>Get the response from FactorDB</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The number to query</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The response from FactorDB</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">AddFactorDB.FactorDBResponse</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="symcalc.plugins.plugins_additions.AddNewtonsMethod">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_additions.</span></span><span class="sig-name descname"><span class="pre">AddNewtonsMethod</span></span><a class="headerlink" href="#symcalc.plugins.plugins_additions.AddNewtonsMethod" title="Permalink to this definition"></a></dt>
 <dd><p>Calculator plugin to add the single variable Newton’s method</p>
