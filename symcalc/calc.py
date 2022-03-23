@@ -416,6 +416,4 @@ class Calculator:
 
 # outputdecimal may time out
 # nintegrate is still sad
-# reminderexponent
-# repeating decimal notation
 # use regex on notationinterval and notationvector
