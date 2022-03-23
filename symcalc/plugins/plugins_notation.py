@@ -426,3 +426,58 @@ class NotationVector(CalculatorPlugin):
             if state is None:
                 break
             command.command = new_command
+
+
+class NotationRepeatingDecimal(CalculatorPlugin):
+    """Calculator plugin to allow for SymPy-like repeating decimal notation
+
+    .. code-block::
+
+        Calculator >>> sympify("0.[127]")
+        127
+        ───
+        999
+        Calculator >>> sympify("421.1[16]")
+        83381
+        ─────
+         198
+
+    .. note:: This plugin executes very early because the original command and its corresponding AST is required for it to function properly.
+    """
+
+    class CheckSubscripts(ast.NodeTransformer):
+        """Checks all of the subscripts of the ast to see there are better resolutions then leaving them unknown"""
+
+        def __init__(self):
+            self._current_command = None
+
+        @property
+        def current_command(self) -> CalculatorCommand:
+            return self._current_command
+
+        @current_command.setter
+        def current_command(self, command: CalculatorCommand) -> None:
+            self._current_command = command
+
+        def visit_Subscript(self, node: ast.Subscript) -> ast.AST | None:
+            if isinstance(node.value, ast.Constant) and isinstance(node.slice, ast.Constant) and regex.match(r"^\d*\.\d*\[\d+\]$", t := self.current_command.command.split("\n")[node.lineno - 1][node.col_offset : node.end_col_offset]):
+                return ast.Call(ast.Name(id="sympify", ctx=ast.Load()), [ast.Constant(t)], [ast.keyword("rational", ast.Constant(True))])
+            return self.generic_visit(node)
+
+    def __init__(self):
+        super().__init__(self.__class__.__name__, 5)
+        self.settings_name = "notation_repeating_decimal"
+        self.settings_toggle = "nr"
+        self.checker = NotationRepeatingDecimal.CheckSubscripts()
+
+    def hook(self, calc: Calculator) -> None:
+        """Sets the settings in the calculator to their default values"""
+        calc.settings[self.settings_name] = True
+        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+
+    def handle_command(self, command: CalculatorCommand) -> None:
+        """Walk the AST to find a subscript expressions"""
+        if not command.calc.settings[self.settings_name]:
+            return
+        self.checker.current_command = command
+        command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))

@@ -414,6 +414,8 @@ class Calculator:
                 break
 
 
-# sin(x)cos(x)
 # outputdecimal may time out
 # nintegrate is still sad
+# reminderexponent
+# repeating decimal notation
+# use regex on notationinterval and notationvector

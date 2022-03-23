@@ -197,6 +197,35 @@ y⋅(x + 1)
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="symcalc.plugins.plugins_notation.NotationRepeatingDecimal">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_notation.</span></span><span class="sig-name descname"><span class="pre">NotationRepeatingDecimal</span></span><a class="headerlink" href="#symcalc.plugins.plugins_notation.NotationRepeatingDecimal" title="Permalink to this definition"></a></dt>
+<dd><p>Calculator plugin to allow for SymPy-like repeating decimal notation</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; sympify(&quot;0.[127]&quot;)
+127
+───
+999
+Calculator &gt;&gt;&gt; sympify(&quot;421.1[16]&quot;)
+83381
+─────
+ 198
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This plugin executes very early because the original command and its corresponding AST is required for it to function properly.</p>
+</div>
+<p>Initializes the plugin</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
+<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="symcalc.plugins.plugins_notation.NotationVector">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_notation.</span></span><span class="sig-name descname"><span class="pre">NotationVector</span></span><a class="headerlink" href="#symcalc.plugins.plugins_notation.NotationVector" title="Permalink to this definition"></a></dt>
 <dd><p>Calculator plugin to allow for shortened vector and matrix notation</p>
