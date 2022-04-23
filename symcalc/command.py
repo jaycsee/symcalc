@@ -13,10 +13,8 @@ class CalculatorCommand:
         self._command_ast = None
         self._command_symtable = None
         self._valid_syntax = False
-        self.command_original = command
-        """The original command text before plugin processing"""
         self.multiline_command = False
-        """Whether the command is a multi-line command. Generally plugins never read ``True`` """
+        """Whether the command is a multi-line command."""
         self.buffer = None
         """The line buffer for a multi-line command"""
         self.abort = False

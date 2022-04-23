@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re as regex
+import urllib
 import webbrowser
 from typing import Any
 
@@ -42,22 +44,25 @@ class AddExternalLinks(CalculatorPlugin):
         """Updates the calculator context"""
         calc.context.desmos = self.desmos
         calc.context.symbolab = self.symbolab
+        calc.context.wolframalpha = self.wolframalpha
+        calc.context.sympygamma = self.sympygamma
 
-    def desmos(self) -> None:
-        """Opens the Desmos graphing calculator in the browser. Available in the calculator context"""
+    def desmos(self, expr=None) -> None:
+        """Opens the Desmos graphing calculator in the browser. Available in the calculator context. Does not support passing on an expression"""
         webbrowser.open_new_tab("https://desmos.com/calculator")
 
-    def symbolab(self) -> None:
+    def symbolab(self, expr=None) -> None:
         """Opens Symbolab in the browser. Available in the calculator context"""
-        webbrowser.open_new_tab("https://www.symbolab.com/")
+        webbrowser.open_new_tab("https://www.symbolab.com/" + (("solver/step-by-step/" + urllib.parse.quote(regex.sub("\*\s*\*", "^", str(expr)))) if expr is not None else ""))
 
-    def wolframalpha(self) -> None:
+    def wolframalpha(self, expr=None) -> None:
         """Opens Wolfram|Alpha in the browser. Available in the calculator context"""
-        webbrowser.open_new_tab("https://www.wolframalpha.com/")
+        webbrowser.open_new_tab("https://www.wolframalpha.com/" + (f"input?i={expr}" if expr is not None else ""))
+        # webbrowser.open_new_tab("https://www.wolframalpha.com/" + (("input?i=" + urllib.parse.quote(str(expr))) if expr is not None else ""))
 
-    def sympygamma(self) -> None:
+    def sympygamma(self, expr=None) -> None:
         """Opens SymPy Gamma in the browser. Available in the calculator context"""
-        webbrowser.open_new_tab("https://gamma.sympy.org/")
+        webbrowser.open_new_tab("https://gamma.sympy.org/" + (f"input?i={expr}" if expr is not None else ""))
 
 
 class AddFactorDB(CalculatorPlugin):
@@ -69,6 +74,7 @@ class AddFactorDB(CalculatorPlugin):
         FactorDBResponse(29928893193015398318666605389344864349536211 is composite, fully factored)
             Factors: {3: 1, 11: 1, 648181: 1, 1399202008951362319095335248405636807: 1}
 
+    The response object contains the number ``n`` queried, the ``status`` response, and ``factors`` as a :class:`dict`
     """
 
     class FactorDBResponse:

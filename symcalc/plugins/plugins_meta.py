@@ -33,30 +33,24 @@ class PrintCommand(CalculatorPlugin):
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 999)
-        self.settings_name = "print_command"
-        self.settings_toggle = "pc"
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = False
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+        # Register the toggles for this plugin
+        self.register_toggle(calc, "pc", "print_command", False)
 
+    @CalculatorPlugin.if_enabled
     def parse_command(self, command: CalculatorCommand) -> None:
-        """Prints the command if the setting is set"""
-        if not command.calc.settings[self.settings_name]:
-            return
+        # Print the command if the plugin is enabled
         print(f"Parsed Command: {command.command}")
 
+    @CalculatorPlugin.if_enabled
     def handle_command(self, command: CalculatorCommand) -> None:
-        """Prints the command if the setting is set"""
-        if not command.calc.settings[self.settings_name]:
-            return
+        # Print the command if the plugin is enabled
         print(f"Handled Command: {command.command}")
 
+    @CalculatorPlugin.if_enabled
     def handle_resend(self, command: CalculatorCommand) -> None:
-        """Prints the command if the setting is set"""
-        if not command.calc.settings[self.settings_name]:
-            return
+        # Print the command if the plugin is enabled
         print(f"Resent command: {command.command}")
 
 
@@ -157,9 +151,20 @@ class PerformanceMonitor(CalculatorPlugin):
 
         def __init__(self):
             self.clear()
+            self.enabled = False
+            self.active_event = None
+            self.title = False
+
+        def enable(self):
+            self.enabled = True
+
+        def disable(self):
+            self.enabled = False
 
         def start_event(self, *args, **kwargs) -> PerformanceMonitor.PerformanceEvent:
             """Starts an event. See the constructor of PerformanceMonitor.PerformanceEvent for arguments. Returns the event"""
+            if not self.enabled:
+                return
             self.active_event = PerformanceMonitor.PerformanceEvent(*args, **kwargs)
             self.active_event.start()
             return self.active_event
@@ -196,11 +201,16 @@ class PerformanceMonitor(CalculatorPlugin):
         def clear(self) -> None:
             """Clears the event list"""
             self.active_event = None
+            self.title = False
             self.event_list = []
 
         def print(self) -> None:
             """Prints the log of events and the performance profile"""
-            print("----------[ Performance ]----------")
+            if not self.enabled:
+                return
+            if not self.title:
+                self.title = True
+                print("----------[ Performance ]----------")
             print("Events:")
             for e in self.event_list:
                 print(f" - {e.get_event_str()}")
@@ -211,69 +221,74 @@ class PerformanceMonitor(CalculatorPlugin):
     class PerformanceMonitorHelper(CalculatorPlugin):
         """Helper plugin for PerformanceMonitor"""
 
-        def __init__(self, profile: PerformanceMonitor.PerformanceProfile, settings_key: str):
+        def __init__(self, profile: PerformanceMonitor.PerformanceProfile):
             super().__init__(self.__class__.__name__, 9999)
             self.profile = profile
-            self.settings_key = settings_key
+
+        def begin_interaction(self, command: CalculatorCommand) -> None:
+            # Executed after all plugins have been notified of the interaction
+            self.profile.end_event()
 
         def parse_command(self, command: CalculatorCommand) -> None:
-            """Executed after all of the command parsing is complete"""
+            # Executed after all of the command parsing is complete
             self.profile.end_event()
 
         def handle_command(self, command: CalculatorCommand) -> None:
-            """Executed after all of the command handling is complete"""
+            # Executed after all of the command handling is complete
             self.profile.end_event()
             self.profile.start_event("Command execution", f"Executing `{command.command}`")
 
         def handle_runtime_error(self, command: CalculatorCommand, data: str) -> None:
-            """Executed after all of the runtime error handling is complete"""
+            # Executed after all of the runtime error handling is complete
             self.profile.end_event()
 
         def handle_syntax_error(self, command: CalculatorCommand, data: str) -> None:
-            """Executed after all of the syntax error handling is complete"""
+            # Executed after all of the syntax error handling is complete
             self.profile.end_event()
 
         def handle_resend(self, command: CalculatorCommand) -> None:
-            """Executed after all of the resend parsing is complete"""
+            # Executed after all of the resend parsing is complete
             self.profile.end_event()
             self.profile.start_event("Resend execution", f"Executing `{command.command}`")
 
         def command_success(self, command: CalculatorCommand) -> None:
-            """Executed after all of the success handling is complete"""
+            # Executed after all of the success handling is complete
             self.profile.end_event()
-            if command.calc.settings[self.settings_key]:
-                self.profile.print()
 
         def command_fail(self, command: CalculatorCommand) -> None:
-            """Executed after all of the failure handling is complete"""
+            # Executed after all of the failure handling is complete
             self.profile.end_event()
-            if command.calc.settings[self.settings_key]:
-                self.profile.print()
+
+        @CalculatorPlugin.if_external_enabled("performance_monitor")
+        def end_interaction(self, command: CalculatorCommand) -> None:
+            # Executed after everything is complete
+            self.profile.end_event()
+            self.profile.print()
+            self.profile.clear()
+            self.profile.disable()
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 0)
-        self.settings_name = "performance_monitor"
-        self.settings_toggle = "pp"
-        self.settings_toggle2 = "pm"
         self.profile = PerformanceMonitor.PerformanceProfile()
-        self.helper = PerformanceMonitor.PerformanceMonitorHelper(self.profile, self.settings_name)
+        self.helper = PerformanceMonitor.PerformanceMonitorHelper(self.profile)
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = False
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle2] = self.settings_name
+        # Register the helper and toggles for this plugin
+        self.register_toggle(calc, "pp", "performance_monitor", False)
+        self.register_raw_toggle(calc, "pm", "performance_monitor", False)
         calc.register_plugin(self.helper)
 
-    def parse_command(self, command: CalculatorCommand) -> None:
-        """Executed at the start of command parsing"""
+    @CalculatorPlugin.if_enabled
+    def begin_interaction(self, command: CalculatorCommand) -> None:
         self.profile.clear()
-        if command.calc.settings[self.settings_name]:
-            print("----------[ Output ]----------")
-        self.profile.start_event("Command parsing", f"Parsing `{command.command_original}`")
+        self.profile.enable()
+        print("----------[ Output ]----------")
+        self.profile.start_event("Begin interaction", f"Begin interaction `{command.command}`")
+
+    def parse_command(self, command: CalculatorCommand) -> None:
+        self.profile.start_event("Command parsing", f"Parsing `{command.command}`")
 
     def handle_command(self, command: CalculatorCommand) -> None:
-        """Executed at the start of command parsing"""
         self.profile.start_event("Command handling", f"Handling `{command.command}`")
 
     def handle_runtime_error(self, command: CalculatorCommand, data: str) -> None:
@@ -288,7 +303,7 @@ class PerformanceMonitor(CalculatorPlugin):
 
     def handle_resend(self, command: CalculatorCommand) -> None:
         self.profile.end_event()
-        self.profile.start_event("Resend parsing", f"Resend parsing `{command.command}`")
+        self.profile.start_event("Resending", f"Resending `{command.command}`")
 
     def command_success(self, command: CalculatorCommand) -> None:
         self.profile.end_event()
@@ -304,3 +319,7 @@ class PerformanceMonitor(CalculatorPlugin):
                 self.profile.start_event("Failure handling", "Command died")
         else:
             self.profile.start_event("Failure handling", "Command failed")
+
+    def end_interaction(self, command: CalculatorCommand) -> None:
+        self.profile.end_event()
+        self.profile.start_event("End interaction", "Interaction ended")

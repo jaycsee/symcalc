@@ -3,7 +3,7 @@ from __future__ import annotations
 import code
 import traceback
 from collections import defaultdict
-from typing import Any, NoReturn
+from typing import Any, Callable, NoReturn
 
 from sympy import *
 
@@ -20,7 +20,7 @@ from .plugin import CalculatorPlugin
 class Calculator:
     """An interactive console containing plugins and the console"""
 
-    def __init__(self, context: CalculatorContext = None, command_prefix: str = "/"):
+    def __init__(self, context: CalculatorContext = None, directive_prefix: str = "/"):
         """Initializes the calculator
 
         Parameters
@@ -33,8 +33,7 @@ class Calculator:
         # Prepare the calculator context
         self.context = context if context is not None else CalculatorContext()
         # Settings
-        self.command_prefix = command_prefix
-        self.settings_toggle = {}  # type: dict[str, str]
+        self.directive_prefix = directive_prefix
         self.settings = {}  # type: dict[str, bool]
         self.context.settings = self.settings
         # Command storage
@@ -44,10 +43,11 @@ class Calculator:
         self.console = code.InteractiveConsole(self.context.__dict__)
         self.console.write = self.handle_error_output
         # Strict Python mode
-        self.strict_python = False
-        # List of plugins
+        self.strict_python = False  # type: bool
+        # List of plugins and directives
         self.plugin_priorities = defaultdict(list)
-        self.plugins = []
+        self.plugins = []  # type: list[CalculatorPlugin]
+        self.directives = {}  # type: dict[str, Callable[[Calculator, str], None]]
 
     def handle_error_output(self, data: str) -> None:
         """Method for handling stderr output written to the console interpreter. The data is generally passed to plugins.
@@ -97,6 +97,39 @@ class Calculator:
         for k in keys:
             self.plugins.extend(self.plugin_priorities[k])
         return self
+
+    def register_directive(self, name: str, callback: Callable[[Calculator, str], None]) -> None:
+        """Register a directive
+
+        Parameters
+        ----------
+        name : :class:`str`
+            The text of the directive
+        callback: :class:`func`
+            The function to call when the directive is triggered
+
+        Raises
+        ------
+        :class:`ValueError`
+            If the name is already exists as a directive in the calculator
+        """
+        if name in self.directives:
+            raise ValueError(f"{name} is already a directive in this calculator")
+        self.directives[name] = callback
+
+    def notify_plugins_begin_interaction(self, command_data: CalculatorCommand) -> None:
+        """Notify all plugins of the beginning of an interaction
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
+        for plugin in self.plugins:
+            plugin.begin_interaction(command_data)
+            if command_data.abort:
+                self.notify_plugins_fail(command_data)
+                return
 
     def notify_plugins_parse(self, command_data: CalculatorCommand) -> None:
         """Notify all plugins of a command to be parsed
@@ -197,6 +230,17 @@ class Calculator:
         for plugin in self.plugins:
             plugin.command_fail(command_data)
 
+    def notify_plugins_end_interaction(self, command_data: CalculatorCommand) -> None:
+        """Notify all plugins of the end of an interaction
+
+        Parameters
+        ----------
+        command_data : :class:`CalculatorCommand`
+            The command which triggered this event
+        """
+        for plugin in self.plugins:
+            plugin.end_interaction(command_data)
+
     def mksym(self, s: str, /, **kwargs) -> Symbol | tuple[Symbol]:
         """Makes symbol(s) in the calculator context
 
@@ -260,6 +304,7 @@ class Calculator:
     def reset(self) -> None:
         """Throws away the buffer from previous commands"""
         self.console.resetbuffer()
+        self.current_command = None
         self.incomplete_command = None
 
     def command(self, command: str) -> bool:
@@ -287,24 +332,37 @@ class Calculator:
             return True
 
         self.reset()
+        command = command.strip()
 
         if not command:
             return True
-        command_data = CalculatorCommand(self, command)
+        self.current_command = command_data = CalculatorCommand(self, command)
+        self.notify_plugins_begin_interaction(command_data)
+        if command_data.abort:
+            self.notify_plugins_fail(command_data)
+            self.notify_plugins_end_interaction(command_data)
+            self.current_command = None
+            return True
 
         # Handle calculator commands
-        if command_data.command == "\\\\" or command_data.command == (self.command_prefix + "py"):
+        if command_data.command == "\\\\" or command_data.command == (self.directive_prefix + "py"):
             # Intercept the command and launch a strict Python mode, bypassing all plugins
             self.strict_python = True
             print()
             self.console.interact(banner="Strict Python mode. Use Ctrl-Z to exit", exitmsg="Exiting strict Python mode...")
             self.strict_python = False
+            self.notify_plugins_end_interaction(command_data)
+            self.current_command = None
             return True
-        if command_data.command.startswith(self.command_prefix):
-            if command_data.command in self.settings_toggle:
-                self.settings[self.settings_toggle[command_data.command]] = not self.settings[self.settings_toggle[command_data.command]]
+        if command_data.command.startswith(self.directive_prefix):
+            if (c := command_data.command.removeprefix(self.directive_prefix)) in self.directives:
+                self.directives[c](self, command_data.command.removeprefix(self.directive_prefix + c).strip())
+                self.notify_plugins_end_interaction(command_data)
+                self.current_command = None
                 return True
             print("Unknown command.")
+            self.notify_plugins_end_interaction(command_data)
+            self.current_command = None
             return True
 
         # Calculator input preprocessing
@@ -312,12 +370,14 @@ class Calculator:
         self.notify_plugins_parse(command_data)
         if command_data.abort:
             self.notify_plugins_fail(command_data)
+            self.notify_plugins_end_interaction(command_data)
+            self.current_command = None
             return True
 
         # Attempt to compile the code
         while True:
             command_data.resend_command = False
-            command_data.success = True
+            command_data.success = False
             try:
                 compiled = code.compile_command(command_data.command)
                 if compiled is None:
@@ -337,6 +397,8 @@ class Calculator:
                 if self.current_command.print_error:
                     print(data, end="")
                 self.notify_plugins_fail(command_data)
+                self.notify_plugins_end_interaction(command_data)
+                self.current_command = None
                 return True
 
         # Execute the command
@@ -344,35 +406,79 @@ class Calculator:
             # Single line calculator input
             # Create the ast and symbol table
             command_data.valid_syntax = True
-            self.notify_plugins_command(command_data)
-            if command_data.abort:
-                self.notify_plugins_fail(command_data)
+            # Split the command by the semicolons
+            # Attempt to run each command separated by semicolons individually
+            try:
+                commands = []
+                o = command_data.command.split("\n")
+                for n in command_data.command_ast.body:
+                    c = [o[n.lineno - 1][n.col_offset : (n.end_col_offset if n.lineno == n.end_lineno else len(o[n.lineno - 1]))]]
+                    for l in range(n.lineno, n.end_lineno - 1):
+                        c.append(o[l])
+                        print(l)
+                    if n.lineno != n.end_lineno:
+                        c.append(o[n.end_lineno - 1][: n.end_col_offset])
+                    commands.append("\n".join(c))
+                for c in commands:
+                    cc = CalculatorCommand(self, c)
+                    cc.valid_syntax = True
+                    if not self.execute_command(cc):
+                        break
+                self.current_command = command_data
+                self.notify_plugins_end_interaction(command_data)
+                self.current_command = None
                 return True
-            # Execute the command
-            command_data.success = True
-            self.interpret(command_data.command)
-            while command_data.resend_command:
-                self.notify_plugins_resend(command_data)
-                if command_data.abort:
-                    command_data.success = False
-                    break
-                command_data.resend_command = False
-                command_data.success = True
-                self.interpret(command_data.command)
-            # Notify success or failure
-            if command_data.success:
-                self.notify_plugins_success(command_data)
-            else:
-                self.notify_plugins_fail(command_data)
-            self.incomplete_command = None
-            return True
+            except AttributeError:
+                self.execute_command(c)
+                self.current_command = command_data
+                self.notify_plugins_end_interaction(command_data)
+                self.current_command = None
+                return True
         else:
             # Treat as Python code
-            self.incomplete_command = command_data
+            self.incomplete_command = CalculatorCommand(self, command)
             self.incomplete_command.buffer = []
-            if not command_data.command_original.startswith(self.command_prefix):
-                self.incomplete_command.buffer.append(command_data.command_original)
+            if not command.startswith(self.directive_prefix):
+                self.incomplete_command.buffer.append(command)
             return False
+
+    def execute_command(self, command_data: CalculatorCommand) -> bool:
+        """Executes a calculator command from the command data object
+
+        Parameters
+        ----------
+        command_data: :class:`CalculatorCommand`
+            The command to execute
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the command was successful
+        """
+        self.current_command = command_data
+        self.notify_plugins_command(command_data)
+        if command_data.abort:
+            self.notify_plugins_fail(command_data)
+            return False
+        # Execute the command
+        command_data.success = True
+        self.interpret(command_data.command)
+        while command_data.resend_command:
+            self.notify_plugins_resend(command_data)
+            if command_data.abort:
+                command_data.success = False
+                break
+            command_data.resend_command = False
+            command_data.success = True
+            self.interpret(command_data.command)
+        # Notify success or failure
+        if command_data.success:
+            self.notify_plugins_success(command_data)
+        else:
+            self.notify_plugins_fail(command_data)
+        self.incomplete_command = None
+        self.current_command = None
+        return command_data.success
 
     def interpret(self, line: str) -> None:
         """Interpret the given line as input
@@ -403,7 +509,7 @@ class Calculator:
                 if self.command(command := input(prompt + " >>> ")):
                     continue
                 print("Multi-line Python input")
-                if not command.startswith(self.command_prefix):
+                if not command.startswith(self.directive_prefix):
                     print(f">>> {command}")
                 while not self.command(input("... ")):
                     pass
@@ -412,8 +518,3 @@ class Calculator:
                 self.reset()
             except EOFError:
                 break
-
-
-# outputdecimal may time out
-# nintegrate is still sad
-# use regex on notationinterval and notationvector

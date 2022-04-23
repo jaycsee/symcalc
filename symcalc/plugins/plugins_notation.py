@@ -50,8 +50,6 @@ class NotationConstants(CalculatorPlugin):
             The lookup table to use. Defaults to physical constants
         """
         super().__init__(self.__class__.__name__, 50)
-        self.settings_name = "notation_constants"
-        self.settings_toggle = "nc"
         self.table = (
             table
             if table is not None
@@ -77,16 +75,15 @@ class NotationConstants(CalculatorPlugin):
         self.checker = None  # type: NotationConstants.CheckNames
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+        # Register the toggles for this plugin
+        self.register_toggle(calc, "nc", "notation_constants", True)
         calc.context.constants = self.table
         self.checker = NotationConstants.CheckNames(calc.context, self.table)
 
+    @CalculatorPlugin.if_enabled
     def handle_command(self, command: CalculatorCommand) -> str | None:
-        """Applies the substitution"""
-        if command.calc.settings[self.settings_name]:
-            command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))
+        # Apply the substitution if enabled
+        command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))
 
 
 class NotationExponent(CalculatorPlugin):
@@ -103,18 +100,14 @@ class NotationExponent(CalculatorPlugin):
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 30)
-        self.settings_name = "notation_exponent"
-        self.settings_toggle = "ne"
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = False
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+        # Register the toggles for this plugin
+        self.register_toggle(calc, "ne", "notation_exponent", False)
 
+    @CalculatorPlugin.if_enabled
     def parse_command(self, command: CalculatorCommand) -> None:
-        """Apply a simple substitution"""
-        if not command.calc.settings[self.settings_name]:
-            return
+        # Apply the substitution if enabled
         command.command = command.command.replace("^", "**")
 
 
@@ -136,16 +129,14 @@ class NotationInterval(CalculatorPlugin):
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 61)
-        self.settings_name = "notation_interval"
-        self.settings_toggle = "ni"
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+        # Register the toggles for this plugin
+        self.register_toggle(calc, "ni", "notation_interval", True)
 
+    @CalculatorPlugin.if_enabled
     def parse_command(self, command: CalculatorCommand) -> None:
-        """Applies the interval expansion"""
+        # Apply the substitution if enabled
         # Interval expansion
         while True:
             new_command = ""
@@ -277,49 +268,43 @@ class NotationMultiply(CalculatorPlugin):
     class NotationMultiplyHelper(CalculatorPlugin):
         """Helper plugin for NotationMultiply"""
 
-        def __init__(self, settings_name: str, caller: NotationMultiply.CheckCalls):
+        def __init__(self, caller: NotationMultiply.CheckCalls):
             super().__init__(self.__class__.__name__, 22)
-            self.settings_name = settings_name
             self.caller = caller
 
         def handle_command(self, command: CalculatorCommand) -> None:
             """Check the ast for multiplication if two expressions are called"""
-            if command.calc.settings[self.settings_name] and command.calc.settings[self.settings_name + "_calls"]:
+            if command.calc.settings["notation_multiply"] and command.calc.settings["notation_multiply_calls"]:
                 command.command_ast = ast.fix_missing_locations(self.caller.visit(command.command_ast))
 
     def __init__(self):
-        super().__init__(self.__class__.__name__, 20)
-        self.settings_name = "notation_multiply"
-        self.settings_toggle = "nm"
+        super().__init__(self.__class__.__name__, 21)
         self.resolver = None  # type: NotationMultiply.CheckResolutions
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
-        calc.settings[self.settings_name + "_numbers"] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle + "n"] = self.settings_name + "_numbers"
-        calc.settings[self.settings_name + "_objects"] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle + "o"] = self.settings_name + "_objects"
-        calc.settings[self.settings_name + "_calls"] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle + "c"] = self.settings_name + "_calls"
+        # Register the helper and the toggles for this plugin
+        self.register_toggle(calc, "nm", "notation_multiply", True)
+        self.register_raw_toggle(calc, "nmn", "notation_multiply_numbers", True)
+        self.register_raw_toggle(calc, "nmo", "notation_multiply_objects", True)
+        self.register_raw_toggle(calc, "nmc", "notation_multiply_calls", True)
         self.resolver = NotationMultiply.CheckResolutions(calc)
         self.caller = NotationMultiply.CheckCalls(calc)
-        self.helper = NotationMultiply.NotationMultiplyHelper(self.settings_name, self.caller)
+        self.helper = NotationMultiply.NotationMultiplyHelper(self.caller)
         calc.register_plugin(self.helper)
 
+    @CalculatorPlugin.if_external_enabled("notation_multiply", "notation_multiply_numbers")
     def handle_syntax_error_obj(self, command: CalculatorCommand, exc: SyntaxError) -> None:
-        if not command.calc.settings[self.settings_name]:
-            return
         lines = command.command.split("\n")
         if regex.fullmatch(r"invalid (binary|octal|decimal|hexadecimal) literal", exc.msg) and lines[exc.lineno - 1][exc.offset - 1] != "_":
-            command.command = lines[exc.lineno - 1][: exc.offset] + "*" + lines[exc.lineno - 1][exc.offset :]
+            lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset] + "*" + lines[exc.lineno - 1][exc.offset :]
+            command.command = "\n".join(lines)
             command.resend_command = True
         elif regex.fullmatch(r"invalid imaginary literal", exc.msg) and lines[exc.lineno - 1][exc.offset - 1] != "_":
             if regex.match(r"^j(?!\w)", lines[exc.lineno - 1][exc.offset :]):
-                command.command = lines[exc.lineno - 1][: exc.offset] + "*" + lines[exc.lineno - 1][exc.offset :]
+                lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset] + "*" + lines[exc.lineno - 1][exc.offset :]
             else:
-                command.command = lines[exc.lineno - 1][: exc.offset - 1] + "*j" + lines[exc.lineno - 1][exc.offset :]
+                lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset - 1] + "*j" + lines[exc.lineno - 1][exc.offset :]
+            command.command = "\n".join(lines)
             command.resend_command = True
         elif exc.msg == "invalid syntax. Perhaps you forgot a comma?":
             original = lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1]
@@ -336,10 +321,10 @@ class NotationMultiply(CalculatorPlugin):
                         command.resend_command = True
                         break
 
+    @CalculatorPlugin.if_external_enabled("notation_multiply_numbers", "notation_multiply_objects")
     def handle_command(self, command: CalculatorCommand) -> None:
-        """Check the ast to see if there are better resolutions"""
-        if command.calc.settings[self.settings_name] and command.calc.settings[self.settings_name + "_objects"]:
-            command.command_ast = ast.fix_missing_locations(self.resolver.visit(command.command_ast))
+        # Walk the AST to apply the substitution
+        command.command_ast = ast.fix_missing_locations(self.resolver.visit(command.command_ast))
 
 
 class NotationVector(CalculatorPlugin):
@@ -363,16 +348,14 @@ class NotationVector(CalculatorPlugin):
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 60)
-        self.settings_name = "notation_vector"
-        self.settings_toggle = "nv"
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+        # Register the toggles for this plugin
+        self.register_toggle(calc, "nv", "notation_vector", True)
 
+    @CalculatorPlugin.if_enabled
     def parse_command(self, command: CalculatorCommand) -> None:
-        """Applies the vector and matrix expansion"""
+        # Apply each expansion character by character
         # Vector expansion
         while True:
             new_command = ""
@@ -428,56 +411,85 @@ class NotationVector(CalculatorPlugin):
             command.command = new_command
 
 
-class NotationRepeatingDecimal(CalculatorPlugin):
-    """Calculator plugin to allow for SymPy-like repeating decimal notation
+class NotationFactorial(CalculatorPlugin):
+    """Calculator plugin to allow for factorial notation
 
     .. code-block::
 
-        Calculator >>> sympify("0.[127]")
-        127
-        ───
-        999
-        Calculator >>> sympify("421.1[16]")
-        83381
-        ─────
-         198
+        Calculator >>> 6!
+        720
+        Calculator >>> 2.3!
+        ⎛23⎞
+        ⎜──⎟!
+        ⎝10⎠
+        Calculator >>> -5!
+        -120
 
-    .. note:: This plugin executes very early because the original command and its corresponding AST is required for it to function properly.
+    .. note:: This plugin was designed with NotationMultiply dependency. Undesired errors may occur if NotationMultiply is disabled.
     """
 
     class CheckSubscripts(ast.NodeTransformer):
-        """Checks all of the subscripts of the ast to see there are better resolutions then leaving them unknown"""
-
-        def __init__(self):
-            self._current_command = None
-
-        @property
-        def current_command(self) -> CalculatorCommand:
-            return self._current_command
-
-        @current_command.setter
-        def current_command(self, command: CalculatorCommand) -> None:
-            self._current_command = command
-
-        def visit_Subscript(self, node: ast.Subscript) -> ast.AST | None:
-            if isinstance(node.value, ast.Constant) and isinstance(node.slice, ast.Constant) and regex.match(r"^\d*\.\d*\[\d+\]$", t := self.current_command.command.split("\n")[node.lineno - 1][node.col_offset : node.end_col_offset]):
-                return ast.Call(ast.Name(id="sympify", ctx=ast.Load()), [ast.Constant(t)], [ast.keyword("rational", ast.Constant(True))])
+        def visit_Subscript(self, node: ast.Subscript) -> ast.Call | Any:
+            if isinstance(node.ctx, ast.Load) and isinstance(node.slice, ast.Name) and node.slice.id == "__factorial__":
+                return ast.Call(ast.Name(id="factorial", ctx=ast.Load()), [node.value], [])
             return self.generic_visit(node)
 
     def __init__(self):
-        super().__init__(self.__class__.__name__, 5)
-        self.settings_name = "notation_repeating_decimal"
-        self.settings_toggle = "nr"
-        self.checker = NotationRepeatingDecimal.CheckSubscripts()
+        super().__init__(self.__class__.__name__, 20)
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+        # Register the toggles for this plugin
+        self.register_toggle(calc, "na", "notation_factorial", True)
+        self.checker = NotationFactorial.CheckSubscripts()
 
+    @CalculatorPlugin.if_enabled
+    def handle_syntax_error_obj(self, command: CalculatorCommand, exc: SyntaxError) -> None:
+        # Find exclamation mark using syntax errors
+        lines = command.command.split("\n")
+        if exc.msg == "invalid syntax" and exc.offset + 1 == exc.end_offset and lines[exc.lineno - 1][exc.offset - 1] == "!" and exc.offset != 1:
+            lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset - 1] + "[__factorial__] " + lines[exc.lineno - 1][exc.offset :]
+            command.command = "\n".join(lines)
+            command.resend_command = True
+
+    @CalculatorPlugin.if_enabled
     def handle_command(self, command: CalculatorCommand) -> None:
-        """Walk the AST to find a subscript expressions"""
-        if not command.calc.settings[self.settings_name]:
-            return
-        self.checker.current_command = command
+        # Walk the AST to apply the substitutions
         command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))
+
+
+# class NotationFunctions(CalculatorPlugin):
+#     """TODO"""
+
+#     class UserFunction:
+#         """A user-defined function compatable with SymPy."""
+
+#         def __init__(self, name: str, expr: sympy.core.Expr):
+#             self.name = name
+#             self.expr = expr
+
+#         def _sympy_(self) -> sympy.core.Expr:
+#             return self.expr
+
+#         def __str__(self) -> str:
+#             return f"{self.name} = {self.expr}"
+
+#         def __repr__(self) -> str:
+#             return f"UserFunction(self.__str__())"
+
+#     def __init__(self):
+#         super().__init__(self.__class__.__name__, 5)
+#         self.settings_name = "notation_function"
+#         self.settings_toggle = "nf"
+
+#     def hook(self, calc: Calculator) -> None:
+#         """Sets the settings in the calculator to their default values"""
+#         calc.settings[self.settings_name] = True
+#         calc.settings_toggle[calc.directive_prefix + self.settings_toggle] = self.settings_name
+#         # calc.context.MathematicalFunction = NotationFunctions.MathematicalFunction
+
+#     # def handle_command(self, command: CalculatorCommand) -> None:
+#     #     """Walk the AST to find a subscript expressions"""
+#     #     if not command.calc.settings[self.settings_name]:
+#     #         return
+#     #     self.checker.current_command = command
+#     #     command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))

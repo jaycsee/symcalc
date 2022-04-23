@@ -1,4 +1,5 @@
 from __future__ import annotations
+import ast
 
 import re as regex
 from typing import Any
@@ -24,27 +25,33 @@ class OutputDecimal(CalculatorPlugin):
         ───
         107
         Decimal: 0.383177570093458
+        Calculator >>> x=321/123
+        Decimal: 2.60975609756098
 
     """
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 200)
-        self.settings_name = "output_decimal"
-        self.settings_toggle = "od"
         self.ignore_types = set([sympy.core.numbers.One, sympy.core.numbers.Zero, sympy.core.numbers.Integer, sympy.core.numbers.Float])
+        self.last_result = None
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
-        calc.settings[self.settings_name] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+        # Register the toggles for this plugin
+        self.register_toggle(calc, "od", "output_decimal", True)
         calc.context.output_decimal = self.output_decimal
 
+    @CalculatorPlugin.if_enabled
     def command_success(self, command: CalculatorCommand) -> None:
-        """Send the command to the interpreter to output the decimal represent"""
-        if not command.calc.settings[self.settings_name]:
-            return
+        # Send the command to the interpreter to output the decimal represent
+
         command.calc.interpret("try:\n\tdel _\nexcept NameError: pass\n")
-        command.calc.interpret("try:\n\toutput_decimal(_)\nexcept NameError: pass\n")
+        if isinstance(b := command.command_ast.body[0], ast.Assign):
+            c = self.last_result
+            self.last_result = None
+            command.calc.interpret("output_decimal(" + ast.unparse(b.targets[0]) + ")")
+            self.last_result = c
+        else:
+            command.calc.interpret("try:\n\toutput_decimal(_)\nexcept NameError: pass\n")
 
     def check_decimal(self, s: str) -> str:
         """Returns if the given string if it is a valid decimal representation of a number
@@ -89,14 +96,22 @@ class OutputDecimal(CalculatorPlugin):
                     except (TypeError, AttributeError, ValueError):
                         out_list.append(None)
                 if print_out and print_valid:
-                    print(f"Decimals: ", end="")
-                    pretty_print(out_list)
+                    if not isinstance(self.last_result, list) or len(self.last_result) != len(out_list) or (True for i in range(len(out_list)) if self.last_result[i] == out_list[i]):
+                        print(f"Decimals: ", end="")
+                        pretty_print(out_list)
+                        self.last_result = out_list
                 return
-            if type(output) not in self.ignore_types and not output.free_symbols and self.check_decimal(str(output.evalf())):
-                print(f"Decimal: ", end="")
-                pretty_print(output.evalf())
-        except (TypeError, AttributeError, ValueError):
-            pass
+            elif type(output) not in self.ignore_types and not output.free_symbols and self.check_decimal(str(output.evalf())):
+                d = output.evalf()
+                if d != self.last_result:
+                    print(f"Decimal: ", end="")
+                    pretty_print(d)
+                    self.last_result = d
+        except ValueError as e:
+            print(f"Could not find the decimal representation: {e}")
+            self.last_result = None
+        except (TypeError, AttributeError):
+            self.last_result = None
 
 
 class OutputStore(CalculatorPlugin):
@@ -113,22 +128,19 @@ class OutputStore(CalculatorPlugin):
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 210)
-        self.settings_name = "output_store"
-        self.settings_toggle = "os"
         self.ignore_types = set([sympy.core.symbol.Symbol, sympy.core.numbers.One, sympy.core.numbers.Zero])
 
     def hook(self, calc: Calculator) -> None:
-        """Sets the settings in the calculator to their default values"""
+        # Register the toggles for this plugin
         self.context = calc.context
-        calc.settings[self.settings_name] = True
-        calc.settings_toggle[calc.command_prefix + self.settings_toggle] = self.settings_name
+        self.register_toggle(calc, "os", "output_store", True)
         calc.context.out = [None]
         calc.context.output_store = self.output_store
+        self.last_found = None  # type: int
 
+    @CalculatorPlugin.if_enabled
     def command_success(self, command: CalculatorCommand) -> None:
-        """Send the command to the interpreter to store the output"""
-        if not command.calc.settings[self.settings_name]:
-            return
+        # Send the command to the interpreter to store the output
         command.calc.interpret("try:\n\tdel _\nexcept NameError: pass\n")
         if not command.calc.chksym("out"):
             command.calc.context.out = [None]
@@ -136,22 +148,36 @@ class OutputStore(CalculatorPlugin):
         command.calc.interpret("try:\n\toutput_store(_)\nexcept NameError: pass\n")
 
     def output_store(self, output) -> None:
+        """Decide whether to store the output in the ``out`` variable if it is not already present. Available in the calculator context
+
+        Parameters
+        ----------
+        output : :class:`Any`
+            The output to store
+        """
         if output is self.context.out or output is None:
             return
         if output in self.context.out and (n := self.context.out.index(output)):
-            if n != len(self.context.out) - 1:
+            if n != len(self.context.out) - 1 and n != self.last_found:
                 print(f"Result in out[{n}]")
+            self.last_found = n
             return
         if "__iter__" in dir(output):
             checks = []
-            for i, c in enumerate(output):
-                checks.append(c)
-                if i == 10:
-                    break
+            try:
+                for i, c in enumerate(output):
+                    checks.append(c)
+                    if i == 10:
+                        break
+            except TypeError:
+                checks = [output]
         else:
             checks = [output]
         for o in checks:
-            if o.__class__.__module__.startswith("sympy.") and type(o) not in self.ignore_types and str(type(o)) != "<class 'sympy.core.assumptions.ManagedProperties'>":
-                self.context.out.append(output)
-                print(f"Result stored in out[{len(self.context.out)-1}]")
-                break
+            try:
+                if o.__class__.__module__.startswith("sympy.") and type(o) not in self.ignore_types and str(type(o)) != "<class 'sympy.core.assumptions.ManagedProperties'>":
+                    self.context.out.append(output)
+                    print(f"Result stored in out[{len(self.context.out)-1}]")
+                    break
+            except AttributeError:
+                continue
