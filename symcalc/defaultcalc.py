@@ -1,18 +1,11 @@
 from __future__ import annotations
 
 import importlib
-import os
 import sys
 import warnings
 
 from . import plugins
 from .calc import *
-from .plugins.plugins_additions import *
-from .plugins.plugins_functionality import *
-from .plugins.plugins_meta import *
-from .plugins.plugins_notation import *
-from .plugins.plugins_output import *
-from .plugins.plugins_reminders import *
 
 
 class DefaultCalculator(Calculator):
@@ -49,7 +42,7 @@ class DefaultCalculator(Calculator):
         Result stored in out[4]
 
         Calculator >>> integrate(sin(x)**2, (x,0,2))
-        sin(2)⋅cos(2)
+          sin(2)⋅cos(2)
         - ───────────── + 1
                 2
         Decimal: 1.18920062382698
@@ -91,13 +84,7 @@ class DefaultCalculator(Calculator):
         """
         super().__init__(*args, **kwargs)
         self.registered = False
-        self.defaultplugins = []
-
-        for x in [f for f in plugins.__dir__() if f.startswith("plugins_")]:
-            m = importlib.import_module(f".{x}", "symcalc.plugins")
-            for c in m.__dir__():
-                if isinstance(t := m.__getattribute__(c), type(DefaultCalculator)) and issubclass(t, CalculatorPlugin) and t != CalculatorPlugin:
-                    self.defaultplugins.append(t)
+        self.defaultplugins = plugins.get_plugins()
 
     def register_default_plugins(self) -> DefaultCalculator:
         """Registers the default plugins.
