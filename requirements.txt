@@ -2,3 +2,4 @@ sympy
 matplotlib
 requests
 black
+pyperclip
