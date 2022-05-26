@@ -1,1 +1,1 @@
-__all__ = ["exact", "symbols"]
+__all__ = ["exact", "functions", "symbols"]

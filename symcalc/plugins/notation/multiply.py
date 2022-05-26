@@ -27,7 +27,7 @@ class NotationMultiply(CalculatorPlugin):
         Calculator >>> 2ab
         2⋅a⋅b
 
-    .. note:: Be careful with juxtaposing with variable denominators. It may produce unexpected parsing due to Python's call precedence
+    .. note:: Be careful when juxtaposing function calls, denominators, or other Python syntax. It may produce unexpected parsing due to Python's evaluation precedence
 
         .. code-block::
 
@@ -35,6 +35,9 @@ class NotationMultiply(CalculatorPlugin):
                2⋅x
             ─────────
             y⋅(x + 1)
+            Calculator >>> 2x(y)**2
+               2  2
+            2⋅x ⋅y
     """
 
     class CheckResolutions(ast.NodeTransformer):
@@ -55,29 +58,34 @@ class NotationMultiply(CalculatorPlugin):
                 ]
             )
 
+        def join_Mult(self, l: list[str]) -> ast.Name | ast.BinOp:
+            r = ast.Name(id=l[0], ctx=ast.Load())
+            for n in l[1:]:
+                r = ast.BinOp(left=r, op=ast.Mult(), right=ast.Name(id=n, ctx=ast.Load()))
+            return r
+
         def visit_Name(self, node: ast.Name) -> ast.AST | None:
             if self.calc.chksym(node.id) or not isinstance(node.ctx, ast.Load):
                 return node
             resolved = self.resolve(node.id)
             if len(resolved) == 1:
                 return self.generic_visit(node)
-            return ast.parse("*".join(resolved), filename="<NotationMultiply>", mode="eval").body
+            return self.join_Mult(resolved)
 
         def visit_Call(self, node: ast.Call) -> ast.AST | None:
             f = node.func
-            if type(f) == ast.Name:
-                resolved = self.resolve(f.id)
-                if len(resolved) == 1:
-                    return self.generic_visit(node)
-                node.func = ast.Name(resolved[-1], ctx=ast.Load())
-                newargs = []
-                for n in node.args:
-                    newargs.append(self.visit(n))
-                node.args = [x for x in newargs if x]
-                return ast.BinOp(ast.parse("*".join(resolved[:-1]), filename="<NotationMultiply>", mode="eval").body, ast.Mult(), node)
-            return self.generic_visit(node)
+            if not isinstance(f, ast.Name) or len(resolved := self.resolve(f.id)) == 1:
+                return self.generic_visit(node)
+            node.func = ast.Name(resolved[-1], ctx=ast.Load())
+            newargs = []
+            for n in node.args:
+                newargs.append(self.visit(n))
+            node.args = [x for x in newargs if x]
+            return ast.BinOp(self.join_Mult(resolved[:-1]), ast.Mult(), node)
 
         def resolve(self, data: str) -> list[str]:
+            if data.startswith("_"):
+                return [data]
             original_data = data
             end = len(data)
             ret = []
@@ -110,7 +118,7 @@ class NotationMultiply(CalculatorPlugin):
         def visit_Call(self, node: ast.Call) -> ast.AST | None:
             try:
                 self.generic_visit(node)
-                if len(node.args) == 1 and isinstance(eval(ast.unparse(node.func), self.calc.context.__dict__, self.calc.context.__dict__), (numbers.Number, sympy.core.Expr)):
+                if len(node.args) == 1 and isinstance(eval(ast.unparse(node.func), self.calc.context.__dict__, self.calc.context.__dict__), numbers.Number | sympy.core.Expr):
                     return ast.BinOp(node.func, ast.Mult(), node.args[0])
             except Exception:
                 pass
@@ -120,7 +128,7 @@ class NotationMultiply(CalculatorPlugin):
         """Helper plugin for NotationMultiply"""
 
         def __init__(self, caller: NotationMultiply.CheckCalls):
-            super().__init__(self.__class__.__name__, 23)
+            super().__init__(self.__class__.__name__, 24)
             self.caller = caller
 
         def handle_command(self, command: CalculatorCommand) -> None:
@@ -129,8 +137,8 @@ class NotationMultiply(CalculatorPlugin):
                 command.command_ast = ast.fix_missing_locations(self.caller.visit(command.command_ast))
 
     def __init__(self):
-        super().__init__(self.__class__.__name__, 22)
-        self.resolver = None  # type: NotationMultiply.CheckResolutions
+        super().__init__(self.__class__.__name__, 21)
+        self.check_resolutions = None
 
     def hook(self, calc: Calculator) -> None:
         # Register the helper and the toggles for this plugin
@@ -138,9 +146,9 @@ class NotationMultiply(CalculatorPlugin):
         self.register_raw_toggle(calc, "nmn", "notation_multiply_numbers", True)
         self.register_raw_toggle(calc, "nmo", "notation_multiply_objects", True)
         self.register_raw_toggle(calc, "nmc", "notation_multiply_calls", True)
-        self.resolver = NotationMultiply.CheckResolutions(calc)
-        self.caller = NotationMultiply.CheckCalls(calc)
-        self.helper = NotationMultiply.NotationMultiplyHelper(self.caller)
+        self.check_resolutions = NotationMultiply.CheckResolutions(calc)
+        self.check_calls = NotationMultiply.CheckCalls(calc)
+        self.helper = NotationMultiply.NotationMultiplyHelper(self.check_calls)
         calc.register_plugin(self.helper)
 
     @CalculatorPlugin.if_external_enabled("notation_multiply", "notation_multiply_numbers")
@@ -157,22 +165,20 @@ class NotationMultiply(CalculatorPlugin):
                 lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset - 1] + "*j" + lines[exc.lineno - 1][exc.offset :]
             command.command = "\n".join(lines)
             command.resend_command = True
-        elif exc.msg == "invalid syntax. Perhaps you forgot a comma?":
-            original = lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1]
-            first = ""
-            for i, c in enumerate(original):
-                first += c
+        elif exc.msg == "invalid syntax":
+            for i in range(exc.offset - 1):
+                c = lines[exc.lineno - 1][:i] + "(" + lines[exc.lineno - 1][i:] + ")"
+                t = lines[: exc.lineno - 1] + [c] + lines[exc.lineno :]
                 try:
-                    code.compile_command(first)
+                    code.compile_command("\n".join(t))
                 except SyntaxError as e:
-                    if e.msg == "invalid syntax. Perhaps you forgot a comma?" and (i != len(original) - 1 or regex.match(r"\w", c)):
-                        n = lines
-                        n[exc.lineno - 1] = n[exc.lineno - 1][: exc.offset - 1] + original[:i] + "*" + original[i:] + n[exc.lineno - 1][exc.end_offset - 1 :]
-                        command.command = "\n".join(n)
+                    if e.msg == "invalid syntax. Perhaps you forgot a comma?":
+                        lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset - 1] + "*" + lines[exc.lineno - 1][exc.offset - 1 :]
+                        command.command = "\n".join(lines)
                         command.resend_command = True
                         break
 
-    @CalculatorPlugin.if_external_enabled("notation_multiply_numbers", "notation_multiply_objects")
+    @CalculatorPlugin.if_external_enabled("notation_multiply", "notation_multiply_objects")
     def handle_command(self, command: CalculatorCommand) -> None:
         # Walk the AST to apply the substitution
-        command.command_ast = ast.fix_missing_locations(self.resolver.visit(command.command_ast))
+        command.command_ast = ast.fix_missing_locations(self.check_resolutions.visit(command.command_ast))

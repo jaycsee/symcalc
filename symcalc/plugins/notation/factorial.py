@@ -26,6 +26,8 @@ class NotationFactorial(CalculatorPlugin):
     """
 
     class CheckSubscripts(ast.NodeTransformer):
+        """Checks the ast for subscripts to convert them to factorial calls"""
+
         def visit_Subscript(self, node: ast.Subscript) -> ast.Call | Any:
             if isinstance(node.ctx, ast.Load) and isinstance(node.slice, ast.Name) and node.slice.id == "__factorial__":
                 return ast.Call(ast.Name(id="factorial", ctx=ast.Load()), [node.value], [])
