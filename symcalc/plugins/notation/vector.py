@@ -1,4 +1,6 @@
 from __future__ import annotations
+import ast
+from typing import Any
 
 from ...calc import Calculator
 from ...command import CalculatorCommand
@@ -16,75 +18,35 @@ class NotationVector(CalculatorPlugin):
         ⎢2⎥
         ⎢ ⎥
         ⎣3⎦
-        Calculator >>> m[1,2,3\\4,5,6]
+        Calculator >>> m[[1,2,3],[4,5,6]]
         ⎡1  2  3⎤
         ⎢       ⎥
         ⎣4  5  6⎦
 
-    .. note:: The current implementation may collide with subscripting variables that end in ``v`` and produce unwanted behavior. Use the toggle ``/ni`` to opt-out
     """
 
+    class CheckSubscripts(ast.NodeTransformer):
+        """Checks the ast for subscripts to convert them to vector or matrix calls"""
+
+        def __init__(self, calc: Calculator) -> None:
+            self.calc = calc
+
+        def visit_Subscript(self, node: ast.Subscript) -> ast.Subscript | Any:
+            if not (isinstance(node.ctx, ast.Load) and isinstance(node.value, ast.Name) and (node.value.id == "v" or node.value.id == "m") and isinstance(node.slice, ast.Tuple | ast.List)) or self.calc.chksym(node.value.id):
+                return self.generic_visit(node)
+            if node.value.id == "m" and isinstance(node.slice, ast.List):
+                node.slice = ast.Tuple([node.slice], ctx=ast.Load())
+            return ast.Call(ast.Name(id="Matrix", ctx=ast.Load()), [ast.List(node.slice.elts, ctx=ast.Load())], [])
+
     def __init__(self):
-        super().__init__(self.__class__.__name__, 60)
+        super().__init__(self.__class__.__name__, 20)
 
     def hook(self, calc: Calculator) -> None:
         # Register the toggles for this plugin
         self.register_toggle(calc, "nv", "notation_vector", True)
+        self.checker = NotationVector.CheckSubscripts(calc)
 
     @CalculatorPlugin.if_enabled
-    def parse_command(self, command: CalculatorCommand) -> None:
-        # Apply each expansion character by character
-        # Vector expansion
-        while True:
-            new_command = ""
-            contents = ""
-            count = -1
-            state = None
-            for i, c in enumerate(command.command):
-                if not state and new_command and new_command[-1] == "v" and c == "[":
-                    new_command = new_command[:-1]
-                    state = True
-                    count = 1
-                elif state and (c == "[" or c == "]"):
-                    count += 1 if c == "[" else -1
-                    if count == 0:
-                        new_command += f"Matrix([{contents.replace('&', ',')}])"
-                        contents = ""
-                        state = False
-                    else:
-                        contents += c
-                elif not state:
-                    new_command += c
-                elif state:
-                    contents += c
-            if state is None:
-                break
-            command.command = new_command
-        # Matrix expansion
-        while True:
-            new_command = ""
-            contents = ""
-            count = -1
-            state = None
-            for c in command.command:
-                if not state and new_command and new_command[-1] == "m" and c == "[":
-                    new_command = new_command[:-1]
-                    state = True
-                    count = 1
-                elif state and (c == "[" or c == "]"):
-                    count += 1 if c == "[" else -1
-                    if count == 0:
-                        contents = contents.replace("\\\\", "],[")
-                        new_command += f"Matrix([[{contents.replace('&', ',').replace(',,', '],[')}]])"
-                        contents = ""
-                        state = False
-                    else:
-                        contents += c
-                elif not state:
-                    new_command += c
-                elif state:
-                    contents += c
-            if state is None:
-                break
-            command.command = new_command
-
+    def handle_command(self, command: CalculatorCommand) -> None:
+        # Walk the AST to apply the substitutions
+        command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))
