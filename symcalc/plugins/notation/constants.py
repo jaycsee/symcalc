@@ -69,7 +69,7 @@ class NotationConstants(CalculatorPlugin):
                 "phi": (sympy.sympify("1") + sympy.sqrt(5)) / sympy.sympify("2"),  # Golden ratio
             }
         )
-        self.checker = None  # type: NotationConstants.CheckNames
+        self.checker = None
 
     def hook(self, calc: Calculator) -> None:
         # Register the toggles for this plugin

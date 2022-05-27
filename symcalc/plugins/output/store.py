@@ -29,7 +29,7 @@ class OutputStore(CalculatorPlugin):
         self.register_toggle(calc, "os", "output_store", True)
         calc.context.out = [None]
         calc.context.output_store = self.output_store
-        self.last_found = None  # type: int
+        self.last_found = None
 
     @CalculatorPlugin.if_enabled
     def command_success(self, command: CalculatorCommand) -> None:

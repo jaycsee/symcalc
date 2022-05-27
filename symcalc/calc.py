@@ -34,20 +34,20 @@ class Calculator:
         self.context = context if context is not None else CalculatorContext()
         # Settings
         self.directive_prefix = directive_prefix
-        self.settings = {}  # type: dict[str, bool]
+        self.settings: dict[str, bool] = {}
         self.context.settings = self.settings
         # Command storage
-        self.current_command = None  # type: CalculatorCommand
-        self.incomplete_command = None  # type: CalculatorCommand
+        self.current_command = None
+        self.incomplete_command = None
         # Prepare the calculator interperter
         self.console = code.InteractiveConsole(self.context.__dict__)
         self.console.write = self.handle_error_output
         # Strict Python mode
-        self.strict_python = False  # type: bool
+        self.strict_python = False
         # List of plugins and directives
         self.plugin_priorities = defaultdict(list)
-        self.plugins = []  # type: list[CalculatorPlugin]
-        self.directives = {}  # type: dict[str, Callable[[Calculator, str], None]]
+        self.plugins = []
+        self.directives: dict[str, Callable[[Calculator, str], None]] = {}
 
     def handle_error_output(self, data: str) -> None:
         """Method for handling stderr output written to the console interpreter. The data is generally passed to plugins.
@@ -91,7 +91,7 @@ class Calculator:
         """
         self.plugin_priorities[plugin.priority].append(plugin)
         plugin.hook(self)
-        self.plugins = []  # type: list[CalculatorPlugin]
+        self.plugins: list[CalculatorPlugin] = []
         keys = list(self.plugin_priorities.keys())
         keys.sort()
         for k in keys:
