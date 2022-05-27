@@ -35,7 +35,7 @@ class NotationConstants(CalculatorPlugin):
 
         def visit_Name(self, node: ast.Name) -> ast.AST | None:
             if regex.match(r"_[a-zA-Z]\w*", node.id) and node.id[1:] in self.table:
-                return ast.Subscript(value=ast.Name(id="constants", ctx=ast.Load()), slice=ast.Constant(value=node.id[1:]), ctx=ast.Load())
+                return self.generic_visit(ast.Subscript(value=ast.Name(id="constants", ctx=ast.Load()), slice=ast.Constant(value=node.id[1:]), ctx=ast.Load()))
             return self.generic_visit(node)
 
     def __init__(self, table: dict[str, Any] = None):

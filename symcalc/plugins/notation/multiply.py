@@ -62,15 +62,15 @@ class NotationMultiply(CalculatorPlugin):
             r = ast.Name(id=l[0], ctx=ast.Load())
             for n in l[1:]:
                 r = ast.BinOp(left=r, op=ast.Mult(), right=ast.Name(id=n, ctx=ast.Load()))
-            return r
+            return self.generic_visit(r)
 
         def visit_Name(self, node: ast.Name) -> ast.AST | None:
             if self.calc.chksym(node.id) or not isinstance(node.ctx, ast.Load):
-                return node
+                return self.generic_visit(node)
             resolved = self.resolve(node.id)
             if len(resolved) == 1:
                 return self.generic_visit(node)
-            return self.join_Mult(resolved)
+            return self.generic_visit(self.join_Mult(resolved))
 
         def visit_Call(self, node: ast.Call) -> ast.AST | None:
             f = node.func
@@ -81,7 +81,7 @@ class NotationMultiply(CalculatorPlugin):
             for n in node.args:
                 newargs.append(self.visit(n))
             node.args = [x for x in newargs if x]
-            return ast.BinOp(self.join_Mult(resolved[:-1]), ast.Mult(), node)
+            return self.generic_visit(ast.BinOp(self.join_Mult(resolved[:-1]), ast.Mult(), node))
 
         def resolve(self, data: str) -> list[str]:
             if data.startswith("_"):
@@ -119,10 +119,10 @@ class NotationMultiply(CalculatorPlugin):
             try:
                 self.generic_visit(node)
                 if len(node.args) == 1 and isinstance(eval(ast.unparse(node.func), self.calc.context.__dict__, self.calc.context.__dict__), numbers.Number | sympy.core.Expr):
-                    return ast.BinOp(node.func, ast.Mult(), node.args[0])
+                    return self.generic_visit(ast.BinOp(node.func, ast.Mult(), node.args[0]))
             except Exception:
                 pass
-            return node
+            return self.generic_visit(node)
 
     class NotationMultiplyHelper(CalculatorPlugin):
         """Helper plugin for NotationMultiply"""

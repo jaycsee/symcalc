@@ -1,8 +1,8 @@
 from __future__ import annotations
-import code
-from typing import Any
 
 import ast
+import code
+from typing import Any
 
 from ...calc import Calculator
 from ...command import CalculatorCommand
@@ -54,9 +54,8 @@ class NotationFunction(CalculatorPlugin):
     class CheckNames(ast.NodeTransformer):
         """Checks the names of all the nodes in the ast to look for references to the function tags"""
 
-        def __init__(self, plugin: NotationFunction, calc: Calculator) -> None:
+        def __init__(self, plugin: NotationFunction) -> None:
             self.plugin = plugin
-            self.calc = calc
 
         def visit_Assign(self, node: ast.Assign) -> ast.Assign | Any:
             index = None
@@ -68,7 +67,7 @@ class NotationFunction(CalculatorPlugin):
             stored = self.plugin.functions[name.id]
             node.targets[index] = ast.Name(id=stored[0], ctx=ast.Load())
             node.value = ast.Call(ast.Name(id="MathFunction", ctx=ast.Load()), [ast.Constant(f"({stored[1]})"), node.value, ast.Constant(ast.unparse(node.value)), ast.parse(f"lambda {stored[1]}:{ast.unparse(node.value)}")], [])
-            return node
+            return self.generic_visit(node)
 
         def visit_NamedExpr(self, node: ast.NamedExpr) -> ast.NamedExpr | Any:
             if node.target.id not in self.plugin.functions:
@@ -76,7 +75,7 @@ class NotationFunction(CalculatorPlugin):
             stored = self.plugin.functions[node.target.id]
             node.target = ast.Name(id=stored[0], ctx=ast.Load())
             node.value = ast.Call(ast.Name(id="MathFunction", ctx=ast.Load()), [ast.Constant(f"({stored[1]})"), node.value, ast.Constant(ast.unparse(node.value)), ast.parse(f"lambda {stored[1]}:{ast.unparse(node.value)}")], [])
-            return node
+            return self.generic_visit(node)
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 70)
@@ -85,7 +84,7 @@ class NotationFunction(CalculatorPlugin):
     def hook(self, calc: Calculator) -> None:
         # Register the toggles for this plugin
         self.register_toggle(calc, "nf", "notation_function", True)
-        self.checker = NotationFunction.CheckNames(self, calc)
+        self.checker = NotationFunction.CheckNames(self)
         calc.context.MathFunction = self.MathFunction
 
     @CalculatorPlugin.if_enabled

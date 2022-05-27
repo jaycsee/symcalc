@@ -1,1 +1,1 @@
-__all__ = ["cis", "external_links", "factordb", "newton", "nintegrate", "origin_vectors", "pyperclip"]
+__all__ = ["cis", "external_links", "factordb", "inverse_trig", "newton", "nintegrate", "origin_vectors", "pyperclip"]

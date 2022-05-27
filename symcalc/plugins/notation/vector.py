@@ -36,7 +36,7 @@ class NotationVector(CalculatorPlugin):
                 return self.generic_visit(node)
             if node.value.id == "m" and isinstance(node.slice, ast.List):
                 node.slice = ast.Tuple([node.slice], ctx=ast.Load())
-            return ast.Call(ast.Name(id="Matrix", ctx=ast.Load()), [ast.List(node.slice.elts, ctx=ast.Load())], [])
+            return self.generic_visit(ast.Call(ast.Name(id="Matrix", ctx=ast.Load()), [ast.List(node.slice.elts, ctx=ast.Load())], []))
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 20)

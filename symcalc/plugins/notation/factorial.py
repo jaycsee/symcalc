@@ -30,7 +30,7 @@ class NotationFactorial(CalculatorPlugin):
 
         def visit_Subscript(self, node: ast.Subscript) -> ast.Call | Any:
             if isinstance(node.ctx, ast.Load) and isinstance(node.slice, ast.Name) and node.slice.id == "__factorial__":
-                return ast.Call(ast.Name(id="factorial", ctx=ast.Load()), [node.value], [])
+                return self.generic_visit(ast.Call(ast.Name(id="factorial", ctx=ast.Load()), [node.value], []))
             return self.generic_visit(node)
 
     def __init__(self):
