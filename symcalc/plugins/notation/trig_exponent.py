@@ -4,7 +4,6 @@ import ast
 from typing import Any
 
 import sympy
-import numbers
 
 from ...calc import Calculator
 from ...command import CalculatorCommand
@@ -36,7 +35,7 @@ class NotationTrigExponent(CalculatorPlugin):
         def __init__(self, calc: Calculator) -> None:
             self.calc = calc
 
-        def visit_BinOp(self, node: ast.BinOp) -> ast.BinOp | Any:
+        def visit_BinOp(self, node: ast.BinOp) -> ast.AST | None:
             if isinstance(node.op, ast.Pow) and isinstance(node.left, ast.Name) and self.calc.chksym(node.left.id) and isinstance(self.calc.getsym(node.left.id), type) and issubclass(self.calc.getsym(node.left.id), sympy.functions.elementary.trigonometric.TrigonometricFunction | sympy.functions.elementary.trigonometric.TrigonometricFunction) and ((isinstance(node.right, ast.Call) and not (isinstance(node.right.func, ast.Name) and node.right.func.id == "sympify")) or (isinstance(node.right, ast.UnaryOp) and isinstance(node.right.operand, ast.Call))):
                 base_func = node.left
                 if isinstance(node.right, ast.Call):

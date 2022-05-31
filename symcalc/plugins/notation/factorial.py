@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ast
-from typing import Any
 
 from ...calc import Calculator
 from ...command import CalculatorCommand
@@ -28,7 +27,7 @@ class NotationFactorial(CalculatorPlugin):
     class CheckSubscripts(ast.NodeTransformer):
         """Checks the ast for subscripts to convert them to factorial calls"""
 
-        def visit_Subscript(self, node: ast.Subscript) -> ast.Call | Any:
+        def visit_Subscript(self, node: ast.Subscript) -> ast.AST | None:
             if isinstance(node.ctx, ast.Load) and isinstance(node.slice, ast.Name) and node.slice.id == "__factorial__":
                 return self.generic_visit(ast.Call(ast.Name(id="factorial", ctx=ast.Load()), [node.value], []))
             return self.generic_visit(node)

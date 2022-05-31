@@ -1,6 +1,6 @@
 from __future__ import annotations
+
 import ast
-from typing import Any
 
 from ...calc import Calculator
 from ...command import CalculatorCommand
@@ -31,7 +31,7 @@ class NotationVector(CalculatorPlugin):
         def __init__(self, calc: Calculator) -> None:
             self.calc = calc
 
-        def visit_Subscript(self, node: ast.Subscript) -> ast.Subscript | Any:
+        def visit_Subscript(self, node: ast.Subscript) -> ast.AST | None:
             if not (isinstance(node.ctx, ast.Load) and isinstance(node.value, ast.Name) and (node.value.id == "v" or node.value.id == "m") and isinstance(node.slice, ast.Tuple | ast.List)) or self.calc.chksym(node.value.id):
                 return self.generic_visit(node)
             if node.value.id == "m" and isinstance(node.slice, ast.List):

@@ -3,3 +3,5 @@ matplotlib
 requests
 black
 pyperclip
+esbonio
+sphinx_rtd_theme

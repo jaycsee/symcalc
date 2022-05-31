@@ -57,7 +57,7 @@ class NotationFunction(CalculatorPlugin):
         def __init__(self, plugin: NotationFunction) -> None:
             self.plugin = plugin
 
-        def visit_Assign(self, node: ast.Assign) -> ast.Assign | Any:
+        def visit_Assign(self, node: ast.Assign) -> ast.AST | None:
             index = None
             for i, name in enumerate(node.targets):
                 if name.id in self.plugin.functions:
@@ -69,7 +69,7 @@ class NotationFunction(CalculatorPlugin):
             node.value = ast.Call(ast.Name(id="MathFunction", ctx=ast.Load()), [ast.Constant(f"({stored[1]})"), node.value, ast.Constant(ast.unparse(node.value)), ast.parse(f"lambda {stored[1]}:{ast.unparse(node.value)}")], [])
             return self.generic_visit(node)
 
-        def visit_NamedExpr(self, node: ast.NamedExpr) -> ast.NamedExpr | Any:
+        def visit_NamedExpr(self, node: ast.NamedExpr) -> ast.AST | None:
             if node.target.id not in self.plugin.functions:
                 return self.generic_visit(node)
             stored = self.plugin.functions[node.target.id]

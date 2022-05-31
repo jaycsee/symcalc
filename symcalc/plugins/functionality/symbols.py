@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ast
-from typing import Any
 
 from ...calc import Calculator
 from ...command import CalculatorCommand
@@ -30,7 +29,7 @@ class AutoSymbol(CalculatorPlugin):
         def __init__(self, calc: Calculator):
             self.calc = calc
 
-        def visit_Name(self, node: ast.Name) -> ast.Name | None:
+        def visit_Name(self, node: ast.Name) -> ast.AST | None:
             if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load) and not self.calc.chksym(node.id) and not node.id.startswith("_"):
                 if self.calc.settings["auto_symbol_char"]:
                     self.calc.mksym(",".join(list(node.id)))

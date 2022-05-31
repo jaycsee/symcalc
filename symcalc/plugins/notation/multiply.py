@@ -58,7 +58,7 @@ class NotationMultiply(CalculatorPlugin):
                 ]
             )
 
-        def join_Mult(self, l: list[str]) -> ast.Name | ast.BinOp:
+        def join_Mult(self, l: list[str]) -> ast.AST | None:
             r = ast.Name(id=l[0], ctx=ast.Load())
             for n in l[1:]:
                 r = ast.BinOp(left=r, op=ast.Mult(), right=ast.Name(id=n, ctx=ast.Load()))

@@ -30,7 +30,7 @@ class AutoFunction(CalculatorPlugin):
         def __init__(self, calc: Calculator):
             self.calc = calc
 
-        def visit_Call(self, node: ast.Call) -> ast.Call | Any:
+        def visit_Call(self, node: ast.Call) -> ast.AST | Any:
             if isinstance(node.func, ast.Name) and not self.calc.chksym(node.func.id):
                 print(f"New function: {node.func.id}")
                 self.calc.context.__setattr__(node.func.id, sympy.Function(node.func.id))

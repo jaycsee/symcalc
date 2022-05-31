@@ -1,6 +1,6 @@
 from __future__ import annotations
-import ast
 
+import ast
 import re as regex
 from typing import Any
 
