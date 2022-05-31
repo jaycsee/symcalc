@@ -94,6 +94,7 @@ class NotationFunction(CalculatorPlugin):
     @CalculatorPlugin.if_enabled
     def handle_syntax_error_obj(self, command: CalculatorCommand, exc: SyntaxError) -> None:
         lines = command.command.split("\n")
+        # This function does not work with multiline commands within the function call
         if exc.msg.startswith("cannot assign to function call here.") or exc.msg == "cannot use assignment expressions with function call":
             placeholder = self.found_function(lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1])
             if placeholder is None:
