@@ -126,7 +126,15 @@ class Calculator:
             The command which triggered this event
         """
         for plugin in self.plugins:
-            plugin.begin_interaction(command_data)
+            try:
+                plugin.begin_interaction(command_data)
+                if command_data == "" or command_data.command is None:
+                    print(f"Plugin {plugin.__class__.__name__} returned an invalid command after interaction initialization. Aborting.")
+                    command_data.abort = True
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during interaction initialization. Aborting command.")
+                command_data.abort = True
             if command_data.abort:
                 self.notify_plugins_fail(command_data)
                 return
@@ -140,7 +148,15 @@ class Calculator:
             The command which triggered this event
         """
         for plugin in self.plugins:
-            plugin.parse_command(command_data)
+            try:
+                plugin.parse_command(command_data)
+                if command_data == "" or command_data.command is None:
+                    print(f"Plugin {plugin.__class__.__name__} returned an invalid command after parsing. Aborting.")
+                    command_data.abort = True
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during parsing. Aborting command.")
+                command_data.abort = True
             if command_data.abort:
                 self.notify_plugins_fail(command_data)
                 return
@@ -154,7 +170,15 @@ class Calculator:
             The command which triggered this event
         """
         for plugin in self.plugins:
-            plugin.handle_command(command_data)
+            try:
+                plugin.handle_command(command_data)
+                if command_data == "" or command_data.command is None or command_data.command_ast is None:
+                    print(f"Plugin {plugin.__class__.__name__} returned an invalid command after processing. Aborting.")
+                    command_data.abort = True
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during processing. Aborting command.")
+                command_data.abort = True
             if command_data.abort:
                 self.notify_plugins_fail(command_data)
                 return
@@ -168,7 +192,15 @@ class Calculator:
             The command which triggered this event
         """
         for plugin in self.plugins:
-            plugin.handle_resend(command_data)
+            try:
+                plugin.handle_resend(command_data)
+                if command_data == "" or command_data.command is None:
+                    print(f"Plugin {plugin.__class__.__name__} returned an invalid command after resend processing. Aborting.")
+                    command_data.abort = True
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during resend processing. Aborting command.")
+                command_data.abort = True
             if command_data.abort:
                 self.notify_plugins_fail(command_data)
                 return
@@ -182,8 +214,16 @@ class Calculator:
             The command which triggered this event
         """
         for plugin in self.plugins:
-            plugin.handle_syntax_error_obj(command_data, exc)
-            plugin.handle_syntax_error(command_data, data)
+            try:
+                plugin.handle_syntax_error_obj(command_data, exc)
+                plugin.handle_syntax_error(command_data, data)
+                if command_data == "" or command_data.command is None:
+                    print(f"Plugin {plugin.__class__.__name__} returned an invalid command after syntax error handling. Aborting.")
+                    command_data.abort = True
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during syntax error handling. Aborting command.")
+                command_data.abort = True
             if command_data.abort:
                 self.notify_plugins_fail(command_data)
                 return
@@ -199,7 +239,15 @@ class Calculator:
             The command which triggered this event
         """
         for plugin in self.plugins:
-            plugin.handle_runtime_error(command_data, data)
+            try:
+                plugin.handle_runtime_error(command_data, data)
+                if command_data == "" or command_data.command is None or command_data.command_ast is None:
+                    print(f"Plugin {plugin.__class__.__name__} returned an invalid command after runtime error handling. Aborting.")
+                    command_data.abort = True
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during runtime error handling. Aborting command.")
+                command_data.abort = True
             if command_data.abort:
                 self.notify_plugins_fail(command_data)
                 return
@@ -216,7 +264,12 @@ class Calculator:
         """
         command_data.success = True
         for plugin in self.plugins:
-            plugin.command_success(command_data)
+            try:
+                plugin.command_success(command_data)
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during success handling.")
+                return
 
     def notify_plugins_fail(self, command_data: CalculatorCommand) -> None:
         """Notify all plugins of a failed command
@@ -228,7 +281,12 @@ class Calculator:
         """
         command_data.success = False
         for plugin in self.plugins:
-            plugin.command_fail(command_data)
+            try:
+                plugin.command_fail(command_data)
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during failure handling.")
+                return
 
     def notify_plugins_end_interaction(self, command_data: CalculatorCommand) -> None:
         """Notify all plugins of the end of an interaction
@@ -239,7 +297,12 @@ class Calculator:
             The command which triggered this event
         """
         for plugin in self.plugins:
-            plugin.end_interaction(command_data)
+            try:
+                plugin.end_interaction(command_data)
+            except Exception:
+                traceback.print_exc()
+                print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during interaction conclusion.")
+                return
 
     def mksym(self, s: str, /, **kwargs) -> Symbol | tuple[Symbol]:
         """Makes symbol(s) in the calculator context
