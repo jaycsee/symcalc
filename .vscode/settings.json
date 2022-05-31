@@ -1,0 +1,11 @@
+{
+  "python.testing.pytestArgs": [
+    "-v",
+    "--cov=symcalc/",
+    "--cov-report=xml",
+    "--pdb",
+    "${workspaceFolder}/tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
+}

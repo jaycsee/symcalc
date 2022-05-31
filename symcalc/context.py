@@ -8,4 +8,3 @@ class CalculatorContext:
         """Initializes the default calculator context"""
         self.__dict__["sympy"] = sympy
         self.__dict__.update(sympy.__dict__)
-        self.plot_3d = sympy.plotting.plot3d
