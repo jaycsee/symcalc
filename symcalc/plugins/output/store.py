@@ -1,3 +1,4 @@
+# type: ignore
 from __future__ import annotations
 
 import sympy
@@ -12,7 +13,7 @@ class OutputStore(CalculatorPlugin):
 
     .. code-block::
 
-        Calculator >>> 2x
+        Calculator >>> 2*x
         2⋅x
         Result stored in out[1]
         Calculator >>> out[1]
@@ -68,7 +69,7 @@ class OutputStore(CalculatorPlugin):
             checks = [output]
         for o in checks:
             try:
-                if o.__class__.__module__.startswith("sympy.") and type(o) not in self.ignore_types and str(type(o)) != "<class 'sympy.core.assumptions.ManagedProperties'>":
+                if type(o) not in self.ignore_types and str(type(o)) != "<class 'sympy.core.assumptions.ManagedProperties'>":
                     self.context.out.append(output)
                     print(f"Result stored in out[{len(self.context.out)-1}]")
                     break

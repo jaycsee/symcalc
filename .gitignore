@@ -1,6 +1,8 @@
-**/.vscode
 **/__pycache__
 **/.pytest_cache
+**/.hypothesis
+**/htmlcov
+**/.coverage
 
 # venv
 Lib/*

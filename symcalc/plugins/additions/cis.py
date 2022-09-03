@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import sympy
 
-from ...calc import Calculator
-from ...plugin import CalculatorPlugin
+from symcalc.calc import Calculator
+from symcalc.plugin import CalculatorPlugin
 
 
 class AddCisFunction(CalculatorPlugin):
@@ -21,7 +21,7 @@ class AddCisFunction(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.cis = self.cis
+        calc.context.cis = self.cis  # type: ignore
 
     def cis(self, *args, **kwargs):
         """Implements the mathematical ``cis`` function. Available in the calculator context. All parameters are passed to :meth:`sympy.sin` and :meth:`sympy.cos` functions"""

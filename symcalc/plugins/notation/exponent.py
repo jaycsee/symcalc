@@ -30,12 +30,12 @@ class NotationExponent(CalculatorPlugin):
     class CheckPows(ast.NodeVisitor):
         """Checks the names of all the nodes in the ast to look for the target notation"""
 
-        def __init__(self, plugin: NotationExponent.CheckPows):
+        def __init__(self, plugin: NotationExponent):
             self.plugin = plugin
 
         def visit_BinOp(self, node: ast.BinOp):
             if isinstance(node.op, ast.BitXor):
-                self.plugin.breaks.append((node.left.end_lineno, node.left.end_col_offset, node.right.lineno, node.right.col_offset))
+                self.plugin.breaks.append((node.left.end_lineno, node.left.end_col_offset, node.right.lineno, node.right.col_offset))  # type: ignore
             return self.generic_visit(node)
 
     @CalculatorPlugin.if_enabled

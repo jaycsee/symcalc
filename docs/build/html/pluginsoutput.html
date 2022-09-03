@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -84,87 +85,9 @@
            <div itemprop="articleBody">
              
   <section id="plugins-output">
-<h1>Plugins - Output<a class="headerlink" href="#plugins-output" title="Permalink to this headline"></a></h1>
+<h1>Plugins - Output<a class="headerlink" href="#plugins-output" title="Permalink to this heading"></a></h1>
 <p>Plugins in this category react to successful commands and their outputs.</p>
-<span class="target" id="module-symcalc.plugins.plugins_output"></span><dl class="py class">
-<dt class="sig sig-object py" id="symcalc.plugins.plugins_output.OutputDecimal">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_output.</span></span><span class="sig-name descname"><span class="pre">OutputDecimal</span></span><a class="headerlink" href="#symcalc.plugins.plugins_output.OutputDecimal" title="Permalink to this definition"></a></dt>
-<dd><p>Calculator plugin to automatically display the decimal representation of the result</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; 3+3j
-3 + 3⋅ⅈ
-Decimal: 3.0 + 3.0⋅ⅈ
-Calculator &gt;&gt;&gt; 123/321
-41
-───
-107
-Decimal: 0.383177570093458
-</pre></div>
-</div>
-<p>Initializes the plugin</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
-<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="symcalc.plugins.plugins_output.OutputDecimal.check_decimal">
-<span class="sig-name descname"><span class="pre">check_decimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.plugins.plugins_output.OutputDecimal.check_decimal" title="Permalink to this definition"></a></dt>
-<dd><p>Returns if the given string if it is a valid decimal representation of a number</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>s</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The string to check</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">s</span></code> if it is a valid decimal representation, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">string</span></code> | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="symcalc.plugins.plugins_output.OutputDecimal.output_decimal">
-<span class="sig-name descname"><span class="pre">output_decimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.plugins.plugins_output.OutputDecimal.output_decimal" title="Permalink to this definition"></a></dt>
-<dd><p>Prints the decimal of the given output. Available in the calculator context</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>output</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Any</span></code>) – The output to be printed, if it is a valid decimal</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="symcalc.plugins.plugins_output.OutputStore">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_output.</span></span><span class="sig-name descname"><span class="pre">OutputStore</span></span><a class="headerlink" href="#symcalc.plugins.plugins_output.OutputStore" title="Permalink to this definition"></a></dt>
-<dd><p>Calculator plugin to automatically store the result in an array</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; 2x
-2⋅x
-Result stored in out[1]
-Calculator &gt;&gt;&gt; out[1]
-2⋅x
-</pre></div>
-</div>
-<p>Initializes the plugin</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
-<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</section>
+<span class="target" id="module-symcalc.plugins.output"></span></section>
 
 
            </div>

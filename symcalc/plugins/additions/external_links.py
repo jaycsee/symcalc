@@ -16,10 +16,10 @@ class AddExternalLinks(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.desmos = self.desmos
-        calc.context.symbolab = self.symbolab
-        calc.context.wolframalpha = self.wolframalpha
-        calc.context.sympygamma = self.sympygamma
+        calc.context.desmos = self.desmos  # type: ignore
+        calc.context.symbolab = self.symbolab  # type: ignore
+        calc.context.wolframalpha = self.wolframalpha  # type: ignore
+        calc.context.sympygamma = self.sympygamma  # type: ignore
 
     def desmos(self, expr=None) -> None:
         """Opens the Desmos graphing calculator in the browser. Available in the calculator context. Does not support passing on an expression"""
@@ -27,12 +27,11 @@ class AddExternalLinks(CalculatorPlugin):
 
     def symbolab(self, expr=None) -> None:
         """Opens Symbolab in the browser. Available in the calculator context"""
-        webbrowser.open_new_tab("https://www.symbolab.com/" + (("solver/step-by-step/" + urllib.parse.quote(regex.sub("\*\s*\*", "^", str(expr)))) if expr is not None else ""))
+        webbrowser.open_new_tab("https://www.symbolab.com/" + (("solver/step-by-step/" + urllib.parse.quote(regex.sub("\*\s*\*", "^", str(expr)))) if expr is not None else ""))  # type: ignore
 
     def wolframalpha(self, expr=None) -> None:
         """Opens Wolfram|Alpha in the browser. Available in the calculator context"""
         webbrowser.open_new_tab("https://www.wolframalpha.com/" + (f"input?i={expr}" if expr is not None else ""))
-        # webbrowser.open_new_tab("https://www.wolframalpha.com/" + (("input?i=" + urllib.parse.quote(str(expr))) if expr is not None else ""))
 
     def sympygamma(self, expr=None) -> None:
         """Opens SymPy Gamma in the browser. Available in the calculator context"""

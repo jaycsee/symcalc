@@ -14,7 +14,7 @@ class AddnIntegrate(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.nintegrate = self.nintegrate
+        calc.context.nintegrate = self.nintegrate  # type: ignore
 
     def nintegrate(self, *args, **kwargs):
         """Implements the numerical integration. Available in the Calculator context."""

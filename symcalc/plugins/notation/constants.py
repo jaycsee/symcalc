@@ -38,7 +38,7 @@ class NotationConstants(CalculatorPlugin):
                 return self.generic_visit(ast.Subscript(value=ast.Name(id="constants", ctx=ast.Load()), slice=ast.Constant(value=node.id[1:]), ctx=ast.Load()))
             return self.generic_visit(node)
 
-    def __init__(self, table: dict[str, Any] = None):
+    def __init__(self, table: dict[str, Any] | None = None):
         """Initializes the plugin with the lookup table
 
         Parameters
@@ -74,10 +74,11 @@ class NotationConstants(CalculatorPlugin):
     def hook(self, calc: Calculator) -> None:
         # Register the toggles for this plugin
         self.register_toggle(calc, "nc", "notation_constants", True)
-        calc.context.constants = self.table
+        calc.context.constants = self.table  # type: ignore
         self.checker = NotationConstants.CheckNames(calc.context, self.table)
 
     @CalculatorPlugin.if_enabled
     def handle_command(self, command: CalculatorCommand) -> str | None:
         # Apply the substitution if enabled
+        assert self.checker
         command.command_ast = ast.fix_missing_locations(self.checker.visit(command.command_ast))

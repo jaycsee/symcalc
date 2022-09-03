@@ -131,6 +131,8 @@ class Calculator:
                 if command_data == "" or command_data.command is None:
                     print(f"Plugin {plugin.__class__.__name__} returned an invalid command after interaction initialization. Aborting.")
                     command_data.abort = True
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during interaction initialization. Aborting command.")
@@ -153,12 +155,13 @@ class Calculator:
                 if command_data == "" or command_data.command is None:
                     print(f"Plugin {plugin.__class__.__name__} returned an invalid command after parsing. Aborting.")
                     command_data.abort = True
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during parsing. Aborting command.")
                 command_data.abort = True
             if command_data.abort:
-                self.notify_plugins_fail(command_data)
                 return
 
     def notify_plugins_command(self, command_data: CalculatorCommand) -> None:
@@ -175,12 +178,13 @@ class Calculator:
                 if command_data == "" or command_data.command is None or command_data.command_ast is None:
                     print(f"Plugin {plugin.__class__.__name__} returned an invalid command after processing. Aborting.")
                     command_data.abort = True
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during processing. Aborting command.")
                 command_data.abort = True
             if command_data.abort:
-                self.notify_plugins_fail(command_data)
                 return
 
     def notify_plugins_resend(self, command_data: CalculatorCommand) -> None:
@@ -197,12 +201,13 @@ class Calculator:
                 if command_data == "" or command_data.command is None:
                     print(f"Plugin {plugin.__class__.__name__} returned an invalid command after resend processing. Aborting.")
                     command_data.abort = True
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during resend processing. Aborting command.")
                 command_data.abort = True
             if command_data.abort:
-                self.notify_plugins_fail(command_data)
                 return
 
     def notify_plugins_syntax_error(self, command_data: CalculatorCommand, data: str, exc: SyntaxError) -> None:
@@ -220,6 +225,8 @@ class Calculator:
                 if command_data == "" or command_data.command is None:
                     print(f"Plugin {plugin.__class__.__name__} returned an invalid command after syntax error handling. Aborting.")
                     command_data.abort = True
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during syntax error handling. Aborting command.")
@@ -244,6 +251,8 @@ class Calculator:
                 if command_data == "" or command_data.command is None or command_data.command_ast is None:
                     print(f"Plugin {plugin.__class__.__name__} returned an invalid command after runtime error handling. Aborting.")
                     command_data.abort = True
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during runtime error handling. Aborting command.")
@@ -266,6 +275,8 @@ class Calculator:
         for plugin in self.plugins:
             try:
                 plugin.command_success(command_data)
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during success handling.")
@@ -283,6 +294,8 @@ class Calculator:
         for plugin in self.plugins:
             try:
                 plugin.command_fail(command_data)
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during failure handling.")
@@ -299,6 +312,8 @@ class Calculator:
         for plugin in self.plugins:
             try:
                 plugin.end_interaction(command_data)
+            except AssertionError:
+                raise
             except Exception:
                 traceback.print_exc()
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during interaction conclusion.")
@@ -381,7 +396,7 @@ class Calculator:
         Returns
         -------
         :class:`bool`
-            ``True`` if more input is required to complete the command, ``False`` otherwise. See :class:`code.InteractiveConsole`
+            ``False`` if more input is required to complete the command, ``True`` otherwise
         """
         if self.incomplete_command is not None:
             try:
@@ -389,6 +404,8 @@ class Calculator:
                 if code.compile_command("\n".join(self.incomplete_command.buffer)) is None:
                     return False
                 self.interpret("\n".join(self.incomplete_command.buffer))
+            except AssertionError:
+                raise
             except Exception as e:
                 print("".join(traceback.format_exception(e)).strip() + "\n", end="")
             self.incomplete_command = None
@@ -407,7 +424,7 @@ class Calculator:
             self.current_command = None
             return True
 
-        # Handle calculator commands
+        # Handle calculator directives
         if command_data.command == "\\\\" or command_data.command == (self.directive_prefix + "py"):
             # Intercept the command and launch a strict Python mode, bypassing all plugins
             self.strict_python = True
@@ -447,6 +464,7 @@ class Calculator:
                     command_data.multiline_command = True
                 else:
                     command_data.multiline_command = False
+                    command_data.valid_syntax = True
                 break
             except SyntaxError as e:
                 # Handle any syntax errors
@@ -456,7 +474,8 @@ class Calculator:
                 self.notify_plugins_syntax_error(command_data, data, e)
                 if command_data.resend_command:
                     self.notify_plugins_resend(command_data)
-                    continue
+                    if not command_data.abort:
+                        continue
                 if self.current_command.print_error:
                     print(data, end="")
                 self.notify_plugins_fail(command_data)
@@ -466,11 +485,7 @@ class Calculator:
 
         # Execute the command
         if not command_data.multiline_command:
-            # Single line calculator input
-            # Create the ast and symbol table
-            command_data.valid_syntax = True
-            # Split the command by the semicolons
-            # Attempt to run each command separated by semicolons individually
+            # TODO: Remake the command splitting
             try:
                 commands = []
                 o = command_data.command.split("\n")

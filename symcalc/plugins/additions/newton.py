@@ -22,10 +22,10 @@ class AddNewtonsMethod(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.newton = self.newton
+        calc.context.newton = self.newton  # type: ignore
 
     def newton(self, f, x0, x=None, i: int = 1):
-        """Implements single variable Newton's methodAvailable in the Calculator context.
+        """Implements single variable Newton's method. Available in the Calculator context.
 
         Parameters
         ----------
@@ -39,7 +39,7 @@ class AddNewtonsMethod(CalculatorPlugin):
             The amount of times to iterate
         """
         if x is None:
-            x = self.x
+            x = self.x  # type: ignore
         df = sympy.diff(f, x)
         for _ in range(i):
             x0 = x0 - (f.subs(x, x0)) / (df.subs(x, x0))

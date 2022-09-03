@@ -38,7 +38,7 @@ class AutoExact(CalculatorPlugin):
             self._current_command = None
 
         @property
-        def current_command(self) -> CalculatorCommand:
+        def current_command(self) -> CalculatorCommand | None:
             return self._current_command
 
         @current_command.setter

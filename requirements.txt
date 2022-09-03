@@ -5,3 +5,4 @@ black
 pyperclip
 esbonio
 sphinx_rtd_theme
+pytest-xdist

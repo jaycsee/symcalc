@@ -69,7 +69,7 @@ class CalculatorCommand:
         """
         if not self._valid_syntax:
             raise ValueError("Attempted to get the AST of a command without valid syntax")
-        return self._command_ast
+        return self._command_ast  # type: ignore
 
     @command_ast.setter
     def command_ast(self, value: ast.AST) -> None:
@@ -87,7 +87,7 @@ class CalculatorCommand:
         """
         if not self._valid_syntax:
             raise ValueError("Attempted to get the AST of a command without valid syntax")
-        return self._command_symtable
+        return self._command_symtable  # type: ignore
 
     def __str__(self) -> str:
         return self.command

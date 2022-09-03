@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -75,7 +76,7 @@
            <div itemprop="articleBody">
              
   <section id="plugins">
-<h1>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline"></a></h1>
+<h1>Plugins<a class="headerlink" href="#plugins" title="Permalink to this heading"></a></h1>
 <p>Each feature of the calculator is implemented as a plugin containing methods that subclasses can override.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin">
@@ -105,9 +106,28 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="symcalc.CalculatorPlugin.begin_interaction">
+<span class="sig-name descname"><span class="pre">begin_interaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.begin_interaction" title="Permalink to this definition"></a></dt>
+<dd><p>The beginning of a calculator interaction. The command may be complete, incomplete, or a multiline statement. No guarantees are made about the command. The object can be modified in place. The command may or may not be modified, split, or aborted before being parsed, handled, or executed.</p>
+<dl>
+<dt>command<span class="classifier"><a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a></span></dt><dd><p>The command that begins the interaction</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>CalculatorCommand</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.parse_command">
 <span class="sig-name descname"><span class="pre">parse_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.parse_command" title="Permalink to this definition"></a></dt>
 <dd><p>A command to be parsed by the plugin, meant to be overriden by subclasses. The given command may or may not be valid Python syntax, and the object can be modified in place.</p>
+<p>The given command may have mutliple statements, such as 1+2;3+4</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command to be parsed</p>
@@ -136,6 +156,7 @@
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.handle_syntax_error_obj">
 <span class="sig-name descname"><span class="pre">handle_syntax_error_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.handle_syntax_error_obj" title="Permalink to this definition"></a></dt>
 <dd><p>The syntax error to be handled by the plugin, meant to be overriden by subclasses. The given command is guaranteed to be invalid Python syntax, and the object can be modified in place.</p>
+<p>The given command may have mutliple statements, such as 1+2;3+4</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -153,6 +174,7 @@
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.handle_syntax_error">
 <span class="sig-name descname"><span class="pre">handle_syntax_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.handle_syntax_error" title="Permalink to this definition"></a></dt>
 <dd><p>The syntax error stderr output to be handled by the plugin, meant to be overriden by subclasses. The given command is guaranteed to be invalid Python syntax, and the object can be modified in place.</p>
+<p>The given command may have mutliple statements, such as 1+2;3+4</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -187,10 +209,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="symcalc.CalculatorPlugin.handle_resend">
 <span class="sig-name descname"><span class="pre">handle_resend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.handle_resend" title="Permalink to this definition"></a></dt>
-<dd><p>Proxies a command to be resent to the calculator. The given command can be modified in place</p>
+<dd><p>Proxies a command to be resent to the calculator. This occurs after a runtime or syntax error. No guarantees are made about the validity of the syntax, and the given command can be modified in place</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>symcalc.command.CalculatorCommand</em></a>) – </p>
+<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.command.CalculatorCommand"><em>CalculatorCommand</em></a>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -228,6 +250,76 @@
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.CalculatorPlugin.end_interaction">
+<span class="sig-name descname"><span class="pre">end_interaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.end_interaction" title="Permalink to this definition"></a></dt>
+<dd><p>The end of a calculator interaction. The command given is the fully parsed command, which is valid Python syntax but may not be the raw statement that was executed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>command</strong> (<a class="reference internal" href="calc.html#symcalc.CalculatorCommand" title="symcalc.CalculatorCommand"><code class="xref py py-class docutils literal notranslate"><span class="pre">CalculatorCommand</span></code></a>) – The command that began the interaction</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.CalculatorPlugin.register_toggle">
+<span class="sig-name descname"><span class="pre">register_toggle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toggle_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.register_toggle" title="Permalink to this definition"></a></dt>
+<dd><p>Called by the plugin to register a toggle for the plugin with the Calculator. Should be used with <a class="reference internal" href="#symcalc.CalculatorPlugin.if_enabled" title="symcalc.CalculatorPlugin.if_enabled"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CalculatorPlugin.if_enabled</span></code></a>. Should not be overridden by plugins</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calc</strong> (<a class="reference internal" href="calc.html#symcalc.Calculator" title="symcalc.Calculator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a>) – The calculator to register the toggle</p></li>
+<li><p><strong>toggle_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the directive to register. Cannot be None</p></li>
+<li><p><strong>setting_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the setting in the calculator to hold the toggle. Cannot be None</p></li>
+<li><p><strong>default</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – If the toggle has already been registered or if toggle_name or setting_name is None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.CalculatorPlugin.register_raw_toggle">
+<span class="sig-name descname"><span class="pre">register_raw_toggle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">toggle_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.register_raw_toggle" title="Permalink to this definition"></a></dt>
+<dd><p>Called by the plugin to register a raw toggle for the plugin with the Calculator. Should not be overridden by plugins</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calc</strong> (<a class="reference internal" href="calc.html#symcalc.Calculator" title="symcalc.Calculator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a>) – The calculator to register the toggle</p></li>
+<li><p><strong>toggle_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the directive to register. Cannot be None</p></li>
+<li><p><strong>setting_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the setting in the calculator to hold the toggle. Cannot be None</p></li>
+<li><p><strong>default</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – If the toggle has already been registered or if toggle_name or setting_name is None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.CalculatorPlugin.if_enabled">
+<span class="sig-name descname"><span class="pre">if_enabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.if_enabled" title="Permalink to this definition"></a></dt>
+<dd><p>A decorator to ensure that a function is only called when the plugin is enabled. Must have called <a class="reference internal" href="#symcalc.CalculatorPlugin.register_toggle" title="symcalc.CalculatorPlugin.register_toggle"><code class="xref py py-func docutils literal notranslate"><span class="pre">CalculatorPlugin.register_toggle()</span></code></a> first</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="symcalc.CalculatorPlugin.if_external_enabled">
+<span class="sig-name descname"><span class="pre">if_external_enabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#symcalc.CalculatorPlugin.if_external_enabled" title="Permalink to this definition"></a></dt>
+<dd><p>A decorator factory to ensure that a function is only called when some external setting is enabled</p>
 </dd></dl>
 
 </dd></dl>

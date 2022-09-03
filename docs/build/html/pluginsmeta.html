@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -84,89 +85,9 @@
            <div itemprop="articleBody">
              
   <section id="plugins-meta">
-<h1>Plugins - Meta<a class="headerlink" href="#plugins-meta" title="Permalink to this headline"></a></h1>
+<h1>Plugins - Meta<a class="headerlink" href="#plugins-meta" title="Permalink to this heading"></a></h1>
 <p>Miscellaneous plugins that aid user experience.</p>
-<span class="target" id="module-symcalc.plugins.plugins_meta"></span><dl class="py class">
-<dt class="sig sig-object py" id="symcalc.plugins.plugins_meta.PerformanceMonitor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_meta.</span></span><span class="sig-name descname"><span class="pre">PerformanceMonitor</span></span><a class="headerlink" href="#symcalc.plugins.plugins_meta.PerformanceMonitor" title="Permalink to this definition"></a></dt>
-<dd><p>Calculator plugin to profile the performance of the plugins installed</p>
-<p>With the default plugin <code class="xref py py-class docutils literal notranslate"><span class="pre">AutoExact</span></code> enabled:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; /pp
-Calculator &gt;&gt;&gt; 1.2
-----------[ Output ]----------
-6/5
-Decimal: 1.20000000000000
-Result stored in out[1]
-----------[ Performance ]----------
-Events:
-- Parsing `1.2`
-- Handling `1.2`
-- Executing `sympify(&#39;1.2&#39;, rational=True)`
-- Successfully executed command
-Profile:
-- Command parsing took 0.0 ns
-- Command handling took 0.51 ms
-- Command execution took 1.5 ms
-- Success handling took 1.52 ms
-Calculator &gt;&gt;&gt; 324.12
-----------[ Output ]----------
-8103
-────
- 25
-----------[ Performance ]----------
-Events:
-- Parsing `324.12`
-- Handling `324.12`
-- Executing `sympify(&#39;324.12&#39;, rational=True)`
-- Successfully executed command
-Profile:
-- Command parsing took 0.497 ms
-- Command handling took 0.519 ms
-- Command execution took 1.51 ms
-- Success handling took 0.991 ms
-</pre></div>
-</div>
-<p>Initializes the plugin</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
-<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="symcalc.plugins.plugins_meta.PrintCommand">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">symcalc.plugins.plugins_meta.</span></span><span class="sig-name descname"><span class="pre">PrintCommand</span></span><a class="headerlink" href="#symcalc.plugins.plugins_meta.PrintCommand" title="Permalink to this definition"></a></dt>
-<dd><p>Calculator plugin to print the resulting command after processing to stdout</p>
-<p>With the default plugin <code class="xref py py-class docutils literal notranslate"><span class="pre">AutoExact</span></code> enabled:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Calculator &gt;&gt;&gt; /pc
-Calculator &gt;&gt;&gt; 1.2
-Parsed Command: 1.2
-Handled Command: sympify(&#39;1.2&#39;, rational=True)
-6/5
-Calculator &gt;&gt;&gt; 324.12
-Parsed Command: 324.12
-Handled Command: sympify(&#39;324.12&#39;, rational=True)
-8103
-────
- 25
-</pre></div>
-</div>
-<p>Initializes the plugin</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the plugin</p></li>
-<li><p><strong>priority</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The priority of the plugin. Lower numbers designate that a plugin should be run before others</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</section>
+<span class="target" id="module-symcalc.plugins.meta"></span></section>
 
 
            </div>

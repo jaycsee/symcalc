@@ -6,7 +6,7 @@ from ...calc import Calculator
 from ...plugin import CalculatorPlugin
 
 
-class AddExternalLinks(CalculatorPlugin):
+class AddPyperclip(CalculatorPlugin):
     """Calculator plugin to add Pyperclip to the calculator context
 
     .. code-block::
@@ -22,6 +22,6 @@ class AddExternalLinks(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.pyperclip = pyperclip
-        calc.context.copy = pyperclip.copy
-        calc.context.paste = pyperclip.paste
+        calc.context.pyperclip = pyperclip  # type: ignore
+        calc.context.copy = pyperclip.copy  # type: ignore
+        calc.context.paste = pyperclip.paste  # type: ignore

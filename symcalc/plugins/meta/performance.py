@@ -114,10 +114,10 @@ class PerformanceMonitor(CalculatorPlugin):
         def disable(self):
             self.enabled = False
 
-        def start_event(self, *args, **kwargs) -> PerformanceMonitor.PerformanceEvent:
+        def start_event(self, *args, **kwargs) -> PerformanceMonitor.PerformanceEvent | None:
             """Starts an event. See the constructor of PerformanceMonitor.PerformanceEvent for arguments. Returns the event"""
             if not self.enabled:
-                return
+                return None
             self.active_event = PerformanceMonitor.PerformanceEvent(*args, **kwargs)
             self.active_event.start()
             return self.active_event

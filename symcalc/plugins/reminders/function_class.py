@@ -27,8 +27,10 @@ class ReminderFunctionClass(CalculatorPlugin):
         super().__init__(self.__class__.__name__, 10)
 
     def hook(self, calc: Calculator) -> None:
-        calc.context.output_functionclass = self.output_functionclass
+        calc.context.output_functionclass = self.output_functionclass  # type: ignore
+        self.register_toggle(calc, "rfc", "reminder_function_class", True)
 
+    @CalculatorPlugin.if_enabled
     def command_success(self, command: CalculatorCommand) -> None:
         command.calc.interpret("try:\n\toutput_functionclass(_)\nexcept NameError: pass\n")
 

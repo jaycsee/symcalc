@@ -106,7 +106,7 @@ class CalculatorPlugin(ABC):
         pass
 
     def handle_resend(self, command: CalculatorCommand) -> None:
-        """Proxies a command to be resent to the calculator. No guarantees are made about the validity of the syntax, and the given command can be modified in place"""
+        """Proxies a command to be resent to the calculator. This occurs after a runtime or syntax error. No guarantees are made about the validity of the syntax, and the given command can be modified in place"""
         pass
 
     def command_success(self, command: CalculatorCommand) -> None:
@@ -163,7 +163,7 @@ class CalculatorPlugin(ABC):
         self.setting_name = setting_name
         self.register_raw_toggle(calc, toggle_name, setting_name, default)
 
-    def register_raw_toggle(self, calc: CalculatorPlugin, toggle_name: str, setting_name: str, default: bool) -> None:
+    def register_raw_toggle(self, calc: Calculator, toggle_name: str, setting_name: str, default: bool) -> None:
         """Called by the plugin to register a raw toggle for the plugin with the Calculator. Should not be overridden by plugins
 
         Parameters
@@ -191,6 +191,7 @@ class CalculatorPlugin(ABC):
         calc.register_directive(toggle_name, toggle)
         calc.settings[setting_name] = default
 
+    @staticmethod
     def if_enabled(func):
         """A decorator to ensure that a function is only called when the plugin is enabled. Must have called :func:`CalculatorPlugin.register_toggle` first"""
 
@@ -202,6 +203,7 @@ class CalculatorPlugin(ABC):
 
         return wrapper
 
+    @staticmethod
     def if_external_enabled(*status):
         """A decorator factory to ensure that a function is only called when some external setting is enabled"""
 
