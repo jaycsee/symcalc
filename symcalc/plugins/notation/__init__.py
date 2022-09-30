@@ -1,1 +1,1 @@
-__all__ = ["constants", "exponent", "factorial", "function", "interval", "multiply", "trig_exponent", "vector"]
+__all__ = ["constants", "exponent", "factorial", "function", "interval", "multiply", "origin_vectors", "trig_exponent", "vector"]

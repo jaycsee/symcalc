@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 import sys
 import warnings
 
@@ -103,6 +102,8 @@ class DefaultCalculator(Calculator):
         """See :meth:`Calculator.interact`"""
         if sys.version_info[0] < 3 or sys.version_info[1] < 10:
             warnings.warn(f"The default calculator is only tested to work on Python 3.10. You are currently running version {sys.version_info[0]}.{sys.version_info[1]}")
+        if "set_int_max_str_digits" in dir(sys):
+            sys.set_int_max_str_digits(0)
         if not self.registered:
             warnings.warn("The default plugins were not regstered. Did you mean to use the Calculator class or forget to call register_default_plugins()?")
         warnings.filterwarnings("ignore", ".*object is not subscriptable; perhaps you missed a comma?")

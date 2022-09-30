@@ -16,6 +16,7 @@ def test_plugin_aliases_hook():
 def test_plugin_aliases_context_updated():
     calc = TestCalculator()
     calc.register_plugin(AddAliases())
+    assert calc.chksym("mksym")
     assert calc.chksym("plot_3d")
     assert calc.chksym("plot_3d_parametric_line")
     assert calc.chksym("plot_3d_parametric_surface")
@@ -57,6 +58,7 @@ def test_plugin_aliases_context_updated():
     assert calc.chksym("arccscdeg")
     assert calc.chksym("arccotdeg")
 
+    assert callable(calc.getsym("mksym"))
     assert callable(calc.getsym("plot_3d"))
     assert callable(calc.getsym("plot_3d_parametric_line"))
     assert callable(calc.getsym("plot_3d_parametric_surface"))
@@ -102,6 +104,7 @@ def test_plugin_aliases_context_updated():
 def test_plugin_aliases_available():
     calc = TestCalculator()
     calc.register_plugin(AddAliases())
+    assert callable(calc.command("mksym"))
     assert callable(calc.command("plot_3d"))
     assert callable(calc.command("plot_3d_parametric_line"))
     assert callable(calc.command("plot_3d_parametric_surface"))

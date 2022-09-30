@@ -124,7 +124,7 @@ class NotationFunction(CalculatorPlugin):
         for arg in call.args:
             if not isinstance(arg, ast.Name):
                 return None
-        self.functions[placeholder] = (call.func.id, ast.unparse(call.args))
+        self.functions[placeholder] = (call.func.id, ",".join([ast.unparse(x) for x in call.args]))
         return placeholder
 
     @CalculatorPlugin.if_enabled

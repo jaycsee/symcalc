@@ -6,7 +6,6 @@ import re as regex
 from typing import Any
 
 import sympy
-
 from symcalc.calc import Calculator
 from symcalc.command import CalculatorCommand
 from symcalc.plugin import CalculatorPlugin
@@ -131,9 +130,7 @@ class OutputDecimal(CalculatorPlugin):
             return
         elif self.check_type(output):
             d = str(output.evalf()) if isinstance(output, sympy.core.evalf.EvalfMixin) else str(output)
-            print(f"{d=}")
             if self.check_number(str(d)) and d != self.last_result:
-                print(f" asdf {d=}")
                 should_print = True
                 if "is_complex" in output.__dir__() and output.is_complex:
                     r = sympy.re(output)

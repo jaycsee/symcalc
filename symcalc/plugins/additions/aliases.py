@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import sympy
-
 from symcalc.calc import Calculator
 from symcalc.plugin import CalculatorPlugin
 
@@ -15,6 +14,8 @@ class AddAliases(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
+        calc.context.mksym = calc.mksym
+        
         calc.context.plot_3d = sympy.plotting.plot3d
         calc.context.plot_3d_parametric_line = sympy.plotting.plot3d_parametric_line
         calc.context.plot_3d_parametric_surface = sympy.plotting.plot3d_parametric_surface

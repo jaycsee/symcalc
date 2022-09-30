@@ -47,7 +47,7 @@ class NotationExponent(CalculatorPlugin):
         lines = command.command.split("\n")
         max_line = max([len(l) for l in lines])
         self.breaks.sort(key=lambda x: x[0] * max_line + x[1])
-        # Reconstruct the command from the
+        # Reconstruct the command 
         c = ""
         last = (1, 0, 1, 0)
         for cur in self.breaks:
