@@ -15,7 +15,10 @@ class AddAliases(CalculatorPlugin):
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
         calc.context.mksym = calc.mksym
-        
+
+        calc.context.nCr = calc.context.ncr = lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k)
+        calc.context.nPr = calc.context.npr = lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k) * sympy.functions.combinatorial.factorials.factorial(k)
+
         calc.context.plot_3d = sympy.plotting.plot3d
         calc.context.plot_3d_parametric_line = sympy.plotting.plot3d_parametric_line
         calc.context.plot_3d_parametric_surface = sympy.plotting.plot3d_parametric_surface
