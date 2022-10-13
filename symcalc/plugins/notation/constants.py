@@ -74,7 +74,7 @@ class NotationConstants(CalculatorPlugin):
     def hook(self, calc: Calculator) -> None:
         # Register the toggles for this plugin
         self.register_toggle(calc, "nc", "notation_constants", True)
-        calc.context.constants = self.table  # type: ignore
+        setattr(calc.context, "constants", self.table)
         self.checker = NotationConstants.CheckNames(calc.context, self.table)
 
     @CalculatorPlugin.if_enabled

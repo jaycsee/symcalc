@@ -37,15 +37,14 @@ class OutputDecimal(CalculatorPlugin):
     def hook(self, calc: Calculator) -> None:
         # Register the toggles for this plugin
         self.register_toggle(calc, "od", "output_decimal", True)
-        calc.context.output_decimal = self.output_decimal
-        calc.context.check_number = self.check_number
+        setattr(calc.context, "output_decimal", self.output_decimal)
+        setattr(calc.context, "check_number", self.check_number)
 
     @CalculatorPlugin.if_enabled
     def command_success(self, command: CalculatorCommand) -> None:
         # Send the command to the interpreter to output the decimal represent
-
         command.calc.interpret("try:\n\tdel _\nexcept NameError: pass\n")
-        if isinstance(b := command.command_ast.body[0], ast.Assign):
+        if isinstance(command.command_ast, ast.Module | ast.Interactive) and isinstance(b := command.command_ast.body[-1], ast.Assign):
             c = self.last_result
             self.last_result = None
             command.calc.interpret("output_decimal(" + ast.unparse(b.targets[0]) + ")")
@@ -98,12 +97,13 @@ class OutputDecimal(CalculatorPlugin):
             The output to be printed, if it is a valid decimal
         """
         if isinstance(output, sympy.matrices.dense.MutableDenseMatrix) and output.shape[1] == 1:
-            output = list(output)
+            output = list(output.values())
         if isinstance(output, list):
             out_list = []
             should_print = False
             for o in output:
                 try:
+                    odir = o.__dir__()
                     s = str(o.evalf(n=5)) if isinstance(o, sympy.core.evalf.EvalfMixin) else str(o)
                     if self.check_number(s):
                         out_list.append(s)
@@ -112,15 +112,14 @@ class OutputDecimal(CalculatorPlugin):
                         elif isinstance(o, numbers.Complex):
                             r = sympy.re(o)
                             i = sympy.im(o)
-                            if r != int(r) or i != int(i):
+                            if r != int(r) or i != int(i):  # type: ignore
                                 should_print = True
-                        elif "is_complex" in o.__dir__() and o.is_complex:
+                        elif "is_complex" in odir and odir["is_complex"]:
                             r = sympy.re(o)
                             i = sympy.im(o)
-                            if self.check_number(str(r.evalf())) and self.check_number(str(i.evalf())) and (type(r) not in self.ignore_types or type(i) not in self.ignore_types):
+                            if self.check_number(str(r.evalf())) and self.check_number(str(i.evalf())) and (type(r) not in self.ignore_types or type(i) not in self.ignore_types):  # type: ignore
                                 should_print = True
                 except (TypeError, AttributeError, ValueError):
-                    raise
                     out_list.append(None)
             if should_print and out_list != [None] * len(out_list):
                 if not isinstance(self.last_result, list) or len(self.last_result) != len(out_list) or (True for i in range(len(out_list)) if self.last_result[i] == out_list[i]):
@@ -135,7 +134,7 @@ class OutputDecimal(CalculatorPlugin):
                 if "is_complex" in output.__dir__() and output.is_complex:
                     r = sympy.re(output)
                     i = sympy.im(output)
-                    if not (self.check_number(str(r.evalf())) and self.check_number(str(i.evalf())) and (self.check_type(r) or self.check_type(i))):
+                    if not (self.check_number(str(r.evalf())) and self.check_number(str(i.evalf())) and (self.check_type(r) or self.check_type(i))):  # type: ignore
                         should_print = False
                 elif isinstance(output, numbers.Complex):
                     if output.real == int(output.real) and output.imag == int(output.imag):

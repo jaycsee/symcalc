@@ -22,6 +22,6 @@ class AddPyperclip(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.pyperclip = pyperclip  # type: ignore
-        calc.context.copy = pyperclip.copy  # type: ignore
-        calc.context.paste = pyperclip.paste  # type: ignore
+        setattr(calc.context, "pyperclip", pyperclip)
+        setattr(calc.context, "copy", pyperclip.copy)
+        setattr(calc.context, "paste", pyperclip.paste)

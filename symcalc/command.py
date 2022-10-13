@@ -15,7 +15,7 @@ class CalculatorCommand:
         self._valid_syntax = False
         self.multiline_command = False
         """Whether the command is a multi-line command."""
-        self.buffer = None
+        self.buffer: list[str] | None = None
         """The line buffer for a multi-line command"""
         self.abort = False
         self.resend_command = False

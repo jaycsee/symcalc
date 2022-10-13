@@ -1,7 +1,7 @@
-# type: ignore
 from __future__ import annotations
 
 import sympy
+import sympy.functions.combinatorial.factorials
 from symcalc.calc import Calculator
 from symcalc.plugin import CalculatorPlugin
 
@@ -14,49 +14,57 @@ class AddAliases(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.mksym = calc.mksym
+        setattr(calc.context, "mksym", calc.mksym)
 
-        calc.context.nCr = calc.context.ncr = lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k)
-        calc.context.nPr = calc.context.npr = lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k) * sympy.functions.combinatorial.factorials.factorial(k)
+        setattr(calc.context, "nCr", lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k))
+        setattr(calc.context, "ncr", lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k))
+        setattr(calc.context, "nPr", lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k) * sympy.functions.combinatorial.factorials.factorial(k))  # type: ignore
+        setattr(calc.context, "npr", lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k) * sympy.functions.combinatorial.factorials.factorial(k))  # type: ignore
 
-        calc.context.plot_3d = sympy.plotting.plot3d
-        calc.context.plot_3d_parametric_line = sympy.plotting.plot3d_parametric_line
-        calc.context.plot_3d_parametric_surface = sympy.plotting.plot3d_parametric_surface
-        calc.context.graph = sympy.plotting.plot
-        calc.context.graph_implicit = sympy.plotting.plot_implicit
-        calc.context.graph_parametric = sympy.plotting.plot_parametric
-        calc.context.graph3d = calc.context.graph_3d = sympy.plotting.plot3d
-        calc.context.graph3d_parametric_line = calc.context.graph_3d_parametric_line = sympy.plotting.plot3d_parametric_line
-        calc.context.graph3d_parametric_surface = calc.context.graph_3d_parametric_surface = sympy.plotting.plot3d_parametric_surface
-        calc.context.differentiate = calc.context.derivative = sympy.diff
-        calc.context.arcsin = sympy.asin
-        calc.context.arccos = sympy.acos
-        calc.context.arctan = sympy.atan
-        calc.context.arcsec = sympy.asec
-        calc.context.arccsc = sympy.acsc
-        calc.context.arccot = sympy.acot
-        calc.context.arcsinh = sympy.asinh
-        calc.context.arccosh = sympy.acosh
-        calc.context.arctanh = sympy.atanh
-        calc.context.arcsech = sympy.asech
-        calc.context.arccsch = sympy.acsch
-        calc.context.arccoth = sympy.acoth
+        setattr(calc.context, "plot_3d", sympy.plotting.plot3d)
+        setattr(calc.context, "plot_3d_parametric_line", sympy.plotting.plot3d_parametric_line)
+        setattr(calc.context, "plot_3d_parametric_surface", sympy.plotting.plot3d_parametric_surface)
+        setattr(calc.context, "graph", sympy.plotting.plot)
+        setattr(calc.context, "graph_implicit", sympy.plotting.plot_implicit)
+        setattr(calc.context, "graph_parametric", sympy.plotting.plot_parametric)
 
-        calc.context.sindeg = lambda x, *args, **kwargs: calc.context.sin(x * sympy.pi / 180, *args, **kwargs)
-        calc.context.cosdeg = lambda x, *args, **kwargs: calc.context.cos(x * sympy.pi / 180, *args, **kwargs)
-        calc.context.tandeg = lambda x, *args, **kwargs: calc.context.tan(x * sympy.pi / 180, *args, **kwargs)
-        calc.context.secdeg = lambda x, *args, **kwargs: calc.context.sec(x * sympy.pi / 180, *args, **kwargs)
-        calc.context.cscdeg = lambda x, *args, **kwargs: calc.context.csc(x * sympy.pi / 180, *args, **kwargs)
-        calc.context.cotdeg = lambda x, *args, **kwargs: calc.context.cot(x * sympy.pi / 180, *args, **kwargs)
-        calc.context.asindeg = lambda *args, **kwargs: calc.context.asin(*args, **kwargs) / sympy.pi * 180
-        calc.context.acosdeg = lambda *args, **kwargs: calc.context.acos(*args, **kwargs) / sympy.pi * 180
-        calc.context.atandeg = lambda *args, **kwargs: calc.context.atan(*args, **kwargs) / sympy.pi * 180
-        calc.context.asecdeg = lambda *args, **kwargs: calc.context.asec(*args, **kwargs) / sympy.pi * 180
-        calc.context.acscdeg = lambda *args, **kwargs: calc.context.acsc(*args, **kwargs) / sympy.pi * 180
-        calc.context.acotdeg = lambda *args, **kwargs: calc.context.acot(*args, **kwargs) / sympy.pi * 180
-        calc.context.arcsindeg = calc.context.asindeg
-        calc.context.arccosdeg = calc.context.acosdeg
-        calc.context.arctandeg = calc.context.atandeg
-        calc.context.arcsecdeg = calc.context.asecdeg
-        calc.context.arccscdeg = calc.context.acscdeg
-        calc.context.arccotdeg = calc.context.acotdeg
+        setattr(calc.context, "graph3d", sympy.plotting.plot3d)
+        setattr(calc.context, "graph_3d", sympy.plotting.plot3d)
+        setattr(calc.context, "graph3d_parametric_line", sympy.plotting.plot3d_parametric_line)
+        setattr(calc.context, "graph_3d_parametric_line", sympy.plotting.plot3d_parametric_line)
+        setattr(calc.context, "graph3d_parametric_surface", sympy.plotting.plot3d_parametric_surface)
+        setattr(calc.context, "graph_3d_parametric_surface", sympy.plotting.plot3d_parametric_surface)
+        setattr(calc.context, "differentiate", sympy.diff)
+        setattr(calc.context, "derivative", sympy.diff)
+
+        setattr(calc.context, "arcsin", sympy.asin)
+        setattr(calc.context, "arccos", sympy.acos)
+        setattr(calc.context, "arctan", sympy.atan)
+        setattr(calc.context, "arcsec", sympy.asec)
+        setattr(calc.context, "arccsc", sympy.acsc)
+        setattr(calc.context, "arccot", sympy.acot)
+        setattr(calc.context, "arcsinh", sympy.asinh)
+        setattr(calc.context, "arccosh", sympy.acosh)
+        setattr(calc.context, "arctanh", sympy.atanh)
+        setattr(calc.context, "arcsech", sympy.asech)
+        setattr(calc.context, "arccsch", sympy.acsch)
+        setattr(calc.context, "arccoth", sympy.acoth)
+
+        setattr(calc.context, "sindeg", lambda x, *args, **kwargs: sympy.sin(x * sympy.pi / 180, *args, **kwargs))
+        setattr(calc.context, "cosdeg", lambda x, *args, **kwargs: sympy.cos(x * sympy.pi / 180, *args, **kwargs))
+        setattr(calc.context, "tandeg", lambda x, *args, **kwargs: sympy.tan(x * sympy.pi / 180, *args, **kwargs))
+        setattr(calc.context, "secdeg", lambda x, *args, **kwargs: sympy.sec(x * sympy.pi / 180, *args, **kwargs))
+        setattr(calc.context, "cscdeg", lambda x, *args, **kwargs: sympy.csc(x * sympy.pi / 180, *args, **kwargs))
+        setattr(calc.context, "cotdeg", lambda x, *args, **kwargs: sympy.cot(x * sympy.pi / 180, *args, **kwargs))
+        setattr(calc.context, "asindeg", lambda *args, **kwargs: sympy.asin(*args, **kwargs) / sympy.pi * 180)
+        setattr(calc.context, "acosdeg", lambda *args, **kwargs: sympy.acos(*args, **kwargs) / sympy.pi * 180)
+        setattr(calc.context, "atandeg", lambda *args, **kwargs: sympy.atan(*args, **kwargs) / sympy.pi * 180)
+        setattr(calc.context, "asecdeg", lambda *args, **kwargs: sympy.asec(*args, **kwargs) / sympy.pi * 180)
+        setattr(calc.context, "acscdeg", lambda *args, **kwargs: sympy.acsc(*args, **kwargs) / sympy.pi * 180)
+        setattr(calc.context, "acotdeg", lambda *args, **kwargs: sympy.acot(*args, **kwargs) / sympy.pi * 180)
+        setattr(calc.context, "arcsindeg", getattr(calc.context, "asindeg"))
+        setattr(calc.context, "arccosdeg", getattr(calc.context, "acosdeg"))
+        setattr(calc.context, "arctandeg", getattr(calc.context, "atandeg"))
+        setattr(calc.context, "arcsecdeg", getattr(calc.context, "asecdeg"))
+        setattr(calc.context, "arccscdeg", getattr(calc.context, "acscdeg"))
+        setattr(calc.context, "arccotdeg", getattr(calc.context, "acotdeg"))

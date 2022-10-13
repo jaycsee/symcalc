@@ -159,11 +159,9 @@ class NotationMultiply(CalculatorPlugin):
             lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset] + "*" + lines[exc.lineno - 1][exc.offset :]
             command.command = "\n".join(lines)
             command.resend_command = True
-        elif regex.fullmatch(r"invalid imaginary literal", exc.msg) and lines[exc.lineno - 1][exc.offset - 1] != "_":
-            if regex.match(r"^j(?!\w)", lines[exc.lineno - 1][exc.offset :]):
-                lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset] + "*" + lines[exc.lineno - 1][exc.offset :]
-            else:
-                lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset - 1] + "*j" + lines[exc.lineno - 1][exc.offset :]
+        elif exc.msg == "invalid imaginary literal" and lines[exc.lineno - 1][exc.offset - 1] != "_":
+            print(lines[exc.lineno - 1][: exc.offset - 1], "*j", lines[exc.lineno - 1][exc.offset :])
+            lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset - 1] + "j*" + lines[exc.lineno - 1][exc.offset :]
             command.command = "\n".join(lines)
             command.resend_command = True
         elif exc.msg == "invalid syntax":
@@ -178,6 +176,8 @@ class NotationMultiply(CalculatorPlugin):
                         command.command = "\n".join(lines)
                         command.resend_command = True
                         break
+        elif exc.msg == "invalid syntax. Perhaps you forgot a comma?":
+            pass
 
     @CalculatorPlugin.if_external_enabled("notation_multiply", "notation_multiply_objects")
     def handle_command(self, command: CalculatorCommand) -> None:

@@ -14,8 +14,8 @@ class AddnIntegrate(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.nintegrate = self.nintegrate  # type: ignore
+        setattr(calc.context, "nintegrate", self.nintegrate)
 
     def nintegrate(self, *args, **kwargs):
         """Implements the numerical integration. Available in the Calculator context."""
-        return sympy.Integral(*args, **kwargs).evalf()
+        return sympy.Integral(*args, **kwargs).evalf()  # type: ignore

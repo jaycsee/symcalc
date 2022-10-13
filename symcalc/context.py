@@ -1,8 +1,12 @@
+from typing import Any
+
 import sympy
 
 
 class CalculatorContext:
     """Contains all of the available methods and variables for a :class:`Calculator`. The attribute :attr:`CalculatorContext.__dict__` is meant to emulate :func:`globals()`"""
+
+    settings: dict[str, Any]
 
     def __init__(self):
         """Initializes the default calculator context"""

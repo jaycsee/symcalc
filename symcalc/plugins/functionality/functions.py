@@ -21,6 +21,9 @@ class AutoFunction(CalculatorPlugin):
         Calculator >>> g(2)
         New function: g
         g(2)
+        Calculator >>> h(a,b,c)
+        New function: h
+        h(a, b, c)
 
     """
 
@@ -33,7 +36,7 @@ class AutoFunction(CalculatorPlugin):
         def visit_Call(self, node: ast.Call) -> ast.AST | Any:
             if isinstance(node.func, ast.Name) and not self.calc.chksym(node.func.id):
                 print(f"New function: {node.func.id}")
-                self.calc.context.__setattr__(node.func.id, sympy.Function(node.func.id))
+                setattr(self.calc.context, node.func.id, sympy.Function(node.func.id))
             return self.generic_visit(node)
 
     def __init__(self):

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re as regex
-import urllib
+import urllib.parse
 import webbrowser
 
 from ...calc import Calculator
@@ -16,10 +16,10 @@ class AddExternalLinks(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.desmos = self.desmos  # type: ignore
-        calc.context.symbolab = self.symbolab  # type: ignore
-        calc.context.wolframalpha = self.wolframalpha  # type: ignore
-        calc.context.sympygamma = self.sympygamma  # type: ignore
+        setattr(calc.context, "desmos", self.desmos)
+        setattr(calc.context, "symbolab", self.symbolab)
+        setattr(calc.context, "wolframalpha", self.wolframalpha)
+        setattr(calc.context, "sympygamma", self.sympygamma)
 
     def desmos(self, expr=None) -> None:
         """Opens the Desmos graphing calculator in the browser. Available in the calculator context. Does not support passing on an expression"""
@@ -27,7 +27,7 @@ class AddExternalLinks(CalculatorPlugin):
 
     def symbolab(self, expr=None) -> None:
         """Opens Symbolab in the browser. Available in the calculator context"""
-        webbrowser.open_new_tab("https://www.symbolab.com/" + (("solver/step-by-step/" + urllib.parse.quote(regex.sub("\*\s*\*", "^", str(expr)))) if expr is not None else ""))  # type: ignore
+        webbrowser.open_new_tab("https://www.symbolab.com/" + (("solver/step-by-step/" + urllib.parse.quote(regex.sub("\*\s*\*", "^", str(expr)))) if expr is not None else ""))
 
     def wolframalpha(self, expr=None) -> None:
         """Opens Wolfram|Alpha in the browser. Available in the calculator context"""

@@ -55,6 +55,8 @@ class AutoExact(CalculatorPlugin):
         def visit_Subscript(self, node: ast.Subscript) -> ast.AST | None:
             # This function does not work with multiline commands within the function call
             if isinstance(node.value, ast.Constant) and isinstance(node.slice, ast.Constant) and regex.match(r"^\d*\.\d*\[\d+\]$", t := self.lines[node.lineno - 1][node.col_offset : node.end_col_offset]):
+                if node.slice.value == 0:
+                    return self.generic_visit(node.value)
                 return ast.Call(ast.Name(id="sympify", ctx=ast.Load()), [ast.Constant(t)], [ast.keyword("rational", ast.Constant(True))])
             return self.generic_visit(node)
 

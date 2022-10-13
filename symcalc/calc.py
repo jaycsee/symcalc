@@ -5,10 +5,11 @@ import traceback
 from collections import defaultdict
 from typing import Any, Callable, NoReturn
 
-from sympy import *
+# from sympy import *
+import sympy
 
 
-class Calculator:
+class Calculator:  # type: ignore
     pass
 
 
@@ -20,7 +21,7 @@ from .plugin import CalculatorPlugin
 class Calculator:
     """An interactive console containing plugins and the console"""
 
-    def __init__(self, context: CalculatorContext = None, directive_prefix: str = "/"):
+    def __init__(self, context: CalculatorContext | None = None, directive_prefix: str = "/"):
         """Initializes the calculator
 
         Parameters
@@ -37,6 +38,7 @@ class Calculator:
         self.settings: dict[str, bool] = {}
         self.context.settings = self.settings
         # Command storage
+        self.queued_commands: list[str] = []
         self.current_command = None
         self.incomplete_command = None
         # Prepare the calculator interperter
@@ -319,7 +321,7 @@ class Calculator:
                 print(f"Plugin {plugin.__class__.__name__} encountered a runtime exception during interaction conclusion.")
                 return
 
-    def mksym(self, s: str, /, **kwargs) -> Symbol | tuple[Symbol]:
+    def mksym(self, s: str, /, **kwargs) -> sympy.Symbol | tuple[sympy.Symbol]:
         """Makes symbol(s) in the calculator context
 
         Parameters
@@ -332,7 +334,7 @@ class Calculator:
         :class:`Symbol` | :class:`tuple[Symbol]`
             The symbol or list of symbols that were created
         """
-        syms = symbols(s, **kwargs)
+        syms = sympy.symbols(s, **kwargs)
         try:
             for name in syms:
                 self.context.__dict__[str(name)] = name
@@ -384,6 +386,21 @@ class Calculator:
         self.console.resetbuffer()
         self.current_command = None
         self.incomplete_command = None
+        self.queued_commands = []
+
+    def queue_command(self, command: str) -> None:
+        """Queues a calculator command for later execution. Can be used by plugins to send another command. If no current command is being executed, this command runs immediately.
+
+        Parameters
+        ----------
+        command_data: :class:`str`
+            The command to queue
+
+        .. warning:: If called from a plugin, this method must be invoked conditionally, otherwise an infinite loop will occur. Using the ``end_interaction`` hook to run once per user interaction is acceptable.
+        """
+        if self.current_command is None:
+            self.command(command)
+        self.queued_commands.append(command)
 
     def command(self, command: str) -> bool:
         """Push a command to the calculator.
@@ -554,6 +571,8 @@ class Calculator:
             self.notify_plugins_success(command_data)
         else:
             self.notify_plugins_fail(command_data)
+        for qc in self.queued_commands:
+            self.command(qc)
         self.incomplete_command = None
         self.current_command = None
         return command_data.success
@@ -581,7 +600,7 @@ class Calculator:
         :class:`NoReturn`
             Exits only on EOF, thus the program should not be expected to return. If it does, only cleanup and a swift exist should occur.
         """
-        init_printing(wrap_line=False)
+        sympy.init_printing(wrap_line=False)
         while True:
             try:
                 if self.command(command := input(prompt + " >>> ")):
@@ -595,4 +614,4 @@ class Calculator:
                 print()
                 self.reset()
             except EOFError:
-                break
+                exit()

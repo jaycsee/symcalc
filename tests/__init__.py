@@ -5,7 +5,6 @@ import random
 import string
 
 import sympy
-
 from symcalc import Calculator, CalculatorPlugin
 
 
@@ -36,9 +35,9 @@ def expand_number(x, with_negatives=True):
     return r
 
 
-def random_ints(unique_size):
-    r = []
-    s = set()
+def random_ints(unique_size: int):
+    r: list[int] = []
+    s: set[int] = set()
     for i in range(unique_size):
         x = random_int(1, 1000000000)
         for y in expand_number(x):
@@ -49,9 +48,9 @@ def random_ints(unique_size):
     return r
 
 
-def random_decimals(unique_size):
-    r = []
-    s = set()
+def random_decimals(unique_size: int):
+    r: list[int | float] = []
+    s: set[int | float] = set()
     for i in range(unique_size):
         x = random_int(1, 1000000000)
         for a in expand_number(x):
@@ -61,9 +60,9 @@ def random_decimals(unique_size):
     return r
 
 
-def random_decimals_sympy(unique_size):
-    r = []
-    s = set()
+def random_decimals_sympy(unique_size: int):
+    r: list[sympy.Integer | sympy.Float] = []
+    s: set[sympy.Integer | sympy.Float] = set()
     for i in range(unique_size):
         x = random_int(1, 1000000000)
         for a in expand_number(x):
@@ -73,9 +72,9 @@ def random_decimals_sympy(unique_size):
     return r
 
 
-def random_fractions(unique_size):
-    r = []
-    s = set()
+def random_fractions(unique_size: int):
+    r: list[int | float] = []
+    s: set[int | float] = set()
     for i in range(unique_size):
         x = random_int(1, 100000000000000) / random_int(1, 1000000000)
         for a in expand_number(x):
@@ -85,11 +84,11 @@ def random_fractions(unique_size):
     return r
 
 
-def random_fractions_sympy(unique_size):
-    r = []
-    s = set()
+def random_fractions_sympy(unique_size: int):
+    r: list[sympy.Rational] = []
+    s: set[sympy.Rational] = set()
     for i in range(unique_size):
-        x = sympy.sympify(random_int(1, 100000000000000)) / sympy.sympify(random_int(1, 1000000000))
+        x = sympy.Rational(random_int(1, 100000000000000), sympy.sympify(random_int(1, 1000000000)))
         for a in expand_number(x):
             if a not in s:
                 s.add(a)
@@ -97,7 +96,7 @@ def random_fractions_sympy(unique_size):
     return r
 
 
-def random_numbers(unique_size):
+def random_numbers(unique_size: int):
     xs = unique_size // 2
     ys = unique_size // 2 + unique_size % 2
     if xs == 0:
@@ -105,7 +104,7 @@ def random_numbers(unique_size):
     return random_decimals(xs) + random_fractions(ys)
 
 
-def random_numbers_sympy(unique_size):
+def random_numbers_sympy(unique_size: int):
     xs = unique_size // 2
     ys = unique_size // 2 + unique_size % 2
     if xs == 0:
@@ -113,8 +112,8 @@ def random_numbers_sympy(unique_size):
     return random_decimals_sympy(xs) + random_fractions_sympy(ys)
 
 
-def random_complexes(unique_size):
-    r = []
+def random_complexes(unique_size: int):
+    r: list[complex] = []
     xs = unique_size // 2
     ys = unique_size // 2 + unique_size % 2
     if xs == 0:
@@ -127,8 +126,8 @@ def random_complexes(unique_size):
     return r
 
 
-def random_complexes_sympy(unique_size):
-    r = []
+def random_complexes_sympy(unique_size: int):
+    r: list[int | float | sympy.Integer | sympy.Float | sympy.Rational | sympy.Add] = []
     xs = unique_size // 2
     ys = unique_size // 2 + unique_size % 2
     if xs == 0:
@@ -141,7 +140,7 @@ def random_complexes_sympy(unique_size):
     return r
 
 
-def generate_test_values(unique_size, sympy_objects: bool = False, real: bool = True, complex: bool = False, include_edge_cases: bool = True):
+def generate_test_values(unique_size: int, sympy_objects: bool = False, real: bool = True, complex: bool = False, include_edge_cases: bool = True):
     r = []
     if not sympy_objects:
         if real:

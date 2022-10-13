@@ -1,4 +1,3 @@
-# type: ignore
 from __future__ import annotations
 
 import sympy
@@ -28,8 +27,8 @@ class OutputStore(CalculatorPlugin):
         # Register the toggles for this plugin
         self.context = calc.context
         self.register_toggle(calc, "os", "output_store", True)
-        calc.context.out = [None]
-        calc.context.output_store = self.output_store
+        setattr(calc.context, "out", [None])
+        setattr(calc.context, "output_store", self.output_store)
         self.last_found = None
 
     @CalculatorPlugin.if_enabled
@@ -37,7 +36,7 @@ class OutputStore(CalculatorPlugin):
         # Send the command to the interpreter to store the output
         command.calc.interpret("try:\n\tdel _\nexcept NameError: pass\n")
         if not command.calc.chksym("out"):
-            command.calc.context.out = [None]
+            setattr(command.calc.context, "out", [None])
             return
         command.calc.interpret("try:\n\toutput_store(_)\nexcept NameError: pass\n")
 
@@ -49,10 +48,10 @@ class OutputStore(CalculatorPlugin):
         output : :class:`Any`
             The output to store
         """
-        if output is self.context.out or output is None:
+        if output is self.context.out or output is None:  # type:ignore
             return
-        if output in self.context.out and (n := self.context.out.index(output)):
-            if n != len(self.context.out) - 1 and n != self.last_found:
+        if output in self.context.out and (n := self.context.out.index(output)):  # type:ignore
+            if n != len(self.context.out) - 1 and n != self.last_found:  # type:ignore
                 print(f"Result in out[{n}]")
             self.last_found = n
             return
@@ -70,8 +69,8 @@ class OutputStore(CalculatorPlugin):
         for o in checks:
             try:
                 if type(o) not in self.ignore_types and str(type(o)) != "<class 'sympy.core.assumptions.ManagedProperties'>":
-                    self.context.out.append(output)
-                    print(f"Result stored in out[{len(self.context.out)-1}]")
+                    self.context.out.append(output)  # type:ignore
+                    print(f"Result stored in out[{len(self.context.out)-1}]")  # type:ignore
                     break
             except AttributeError:
                 continue

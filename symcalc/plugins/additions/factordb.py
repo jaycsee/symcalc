@@ -44,7 +44,7 @@ class AddFactorDB(CalculatorPlugin):
 
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
-        calc.context.factordb = self.factordb  # type: ignore
+        setattr(calc.context, "factordb", self.factordb)
 
     def factordb(self, n: int | str) -> AddFactorDB.FactorDBResponse:
         """Get the response from FactorDB
