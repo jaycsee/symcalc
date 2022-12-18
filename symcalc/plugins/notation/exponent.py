@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+from collections import defaultdict
 
 from ...calc import Calculator
 from ...command import CalculatorCommand
@@ -34,33 +35,29 @@ class NotationExponent(CalculatorPlugin):
             self.plugin = plugin
 
         def visit_BinOp(self, node: ast.BinOp):
-            if isinstance(node.op, ast.BitXor):
-                self.plugin.breaks.append((node.left.end_lineno, node.left.end_col_offset, node.left.end_lineno, node.left.end_col_offset + 1))  # type: ignore
+            if isinstance(node.op, ast.BitXor) and node.left.end_lineno is not None and node.left.end_col_offset is not None:
+                line = node.left.end_lineno
+                start = node.left.end_col_offset
+                for i in range(start, len(self.plugin.current_lines[line - 1])):
+                    if self.plugin.current_lines[line - 1][i] == "^":
+                        self.plugin.breaks[line - 1].add(i)
             return self.generic_visit(node)
 
     @CalculatorPlugin.if_enabled
     def handle_command(self, command: CalculatorCommand) -> str | None:
         # Find all the bit xors
-        self.breaks: list[tuple[int, int, int, int]] = []
+        self.breaks: defaultdict[int, set[int]] = defaultdict(set)
+        self.current_lines = command.command.split("\n")
         self.checker.visit(command.command_ast)
-        # Sort by line number and then column number
-        lines = command.command.split("\n")
-        max_line = max([len(l) for l in lines])
-        self.breaks.sort(key=lambda x: x[0] * max_line + x[1])
-        # Reconstruct the command
-        c = ""
-        last = (1, 0, 1, 0)
-        for cur in self.breaks:
-            left_end_lineno, left_end_col, *_ = cur
-            if last[2] == left_end_lineno:
-                c += (lines[left_end_lineno - 1][last[3] : left_end_col]) + "**"
-            else:
-                c += "\n".join([lines[last[2] - 1][last[3] :]] + lines[last[2] - 1 : left_end_lineno - 1] + [lines[left_end_lineno - 1][:left_end_col]])
-            last = cur
-        left_end_lineno = len(lines)
-        left_end_col = len(lines[-1])
-        if last[2] == left_end_lineno:
-            c += lines[last[2] - 1][last[3] : left_end_col]
-        else:
-            c += "\n".join([lines[last[2] - 1][last[3] :]] + lines[last[2] - 1 : left_end_lineno - 1] + [lines[left_end_lineno - 1][:left_end_col]])
-        command.command = c
+        for k, v in self.breaks.items():
+            v = list(v)
+            v.sort()
+            l = ""
+            for i in range(len(self.current_lines[k]) - 1, -1, -1):
+                if v and i == v[-1]:
+                    v.pop()
+                    l += "**"
+                else:
+                    l += self.current_lines[k][i]
+            self.current_lines[k] = l[::-1]
+        command.command = "\n".join(self.current_lines)

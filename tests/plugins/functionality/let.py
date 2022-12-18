@@ -6,10 +6,9 @@ from collections import defaultdict
 from typing import Any
 
 import sympy
-
-from ...calc import Calculator
-from ...command import CalculatorCommand
-from ...plugin import CalculatorPlugin
+from symcalc.calc import Calculator
+from symcalc.command import CalculatorCommand
+from symcalc.plugin import CalculatorPlugin
 
 
 class LetStatements(CalculatorPlugin):

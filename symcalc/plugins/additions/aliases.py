@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import sympy
 import sympy.functions.combinatorial.factorials
+import sympy.parsing.latex
+import sympy.parsing.mathematica
+import sympy.parsing.maxima
 from symcalc.calc import Calculator
 from symcalc.plugin import CalculatorPlugin
 
@@ -15,6 +18,12 @@ class AddAliases(CalculatorPlugin):
     def hook(self, calc: Calculator) -> None:
         """Updates the calculator context"""
         setattr(calc.context, "mksym", calc.mksym)
+        setattr(calc.context, "getsym", calc.getsym)
+        setattr(calc.context, "chksym", calc.chksym)
+
+        setattr(calc.context, "parse_latex", sympy.parsing.latex.parse_latex)
+        setattr(calc.context, "parse_maxima", sympy.parsing.maxima.parse_maxima)
+        setattr(calc.context, "parse_mathematica", sympy.parsing.mathematica.parse_mathematica)
 
         setattr(calc.context, "nCr", lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k))
         setattr(calc.context, "ncr", lambda n, k: sympy.functions.combinatorial.factorials.binomial(n, k))
@@ -50,18 +59,18 @@ class AddAliases(CalculatorPlugin):
         setattr(calc.context, "arccsch", sympy.acsch)
         setattr(calc.context, "arccoth", sympy.acoth)
 
-        setattr(calc.context, "sindeg", lambda x, *args, **kwargs: sympy.sin(x * sympy.pi / 180, *args, **kwargs))
-        setattr(calc.context, "cosdeg", lambda x, *args, **kwargs: sympy.cos(x * sympy.pi / 180, *args, **kwargs))
-        setattr(calc.context, "tandeg", lambda x, *args, **kwargs: sympy.tan(x * sympy.pi / 180, *args, **kwargs))
-        setattr(calc.context, "secdeg", lambda x, *args, **kwargs: sympy.sec(x * sympy.pi / 180, *args, **kwargs))
-        setattr(calc.context, "cscdeg", lambda x, *args, **kwargs: sympy.csc(x * sympy.pi / 180, *args, **kwargs))
-        setattr(calc.context, "cotdeg", lambda x, *args, **kwargs: sympy.cot(x * sympy.pi / 180, *args, **kwargs))
-        setattr(calc.context, "asindeg", lambda *args, **kwargs: sympy.asin(*args, **kwargs) / sympy.pi * 180)
-        setattr(calc.context, "acosdeg", lambda *args, **kwargs: sympy.acos(*args, **kwargs) / sympy.pi * 180)
-        setattr(calc.context, "atandeg", lambda *args, **kwargs: sympy.atan(*args, **kwargs) / sympy.pi * 180)
-        setattr(calc.context, "asecdeg", lambda *args, **kwargs: sympy.asec(*args, **kwargs) / sympy.pi * 180)
-        setattr(calc.context, "acscdeg", lambda *args, **kwargs: sympy.acsc(*args, **kwargs) / sympy.pi * 180)
-        setattr(calc.context, "acotdeg", lambda *args, **kwargs: sympy.acot(*args, **kwargs) / sympy.pi * 180)
+        setattr(calc.context, "sindeg", lambda arg: sympy.sin(arg * sympy.pi / 180))
+        setattr(calc.context, "cosdeg", lambda arg: sympy.cos(arg * sympy.pi / 180))
+        setattr(calc.context, "tandeg", lambda arg: sympy.tan(arg * sympy.pi / 180))
+        setattr(calc.context, "secdeg", lambda arg: sympy.sec(arg * sympy.pi / 180))
+        setattr(calc.context, "cscdeg", lambda arg: sympy.csc(arg * sympy.pi / 180))
+        setattr(calc.context, "cotdeg", lambda arg: sympy.cot(arg * sympy.pi / 180))
+        setattr(calc.context, "asindeg", lambda arg: sympy.asin(arg) / sympy.pi * 180)
+        setattr(calc.context, "acosdeg", lambda arg: sympy.acos(arg) / sympy.pi * 180)
+        setattr(calc.context, "atandeg", lambda arg: sympy.atan(arg) / sympy.pi * 180)
+        setattr(calc.context, "asecdeg", lambda arg: sympy.asec(arg) / sympy.pi * 180)
+        setattr(calc.context, "acscdeg", lambda arg: sympy.acsc(arg) / sympy.pi * 180)
+        setattr(calc.context, "acotdeg", lambda arg: sympy.acot(arg) / sympy.pi * 180)
         setattr(calc.context, "arcsindeg", getattr(calc.context, "asindeg"))
         setattr(calc.context, "arccosdeg", getattr(calc.context, "acosdeg"))
         setattr(calc.context, "arctandeg", getattr(calc.context, "atandeg"))

@@ -31,7 +31,7 @@ class OutputDecimal(CalculatorPlugin):
 
     def __init__(self):
         super().__init__(self.__class__.__name__, 200)
-        self.ignore_types = set([sympy.core.numbers.One, sympy.core.numbers.Zero, sympy.core.numbers.Integer, sympy.core.numbers.Float, int, float])
+        self.ignore_types = set([sympy.core.numbers.One, sympy.core.numbers.Zero, sympy.core.numbers.Integer, sympy.core.numbers.Float, int, float, str])
         self.last_result = None
 
     def hook(self, calc: Calculator) -> None:
@@ -114,7 +114,7 @@ class OutputDecimal(CalculatorPlugin):
                             i = sympy.im(o)
                             if r != int(r) or i != int(i):  # type: ignore
                                 should_print = True
-                        elif "is_complex" in odir and odir["is_complex"]:
+                        elif "is_complex" in odir and getattr(o, "is_complex"):
                             r = sympy.re(o)
                             i = sympy.im(o)
                             if self.check_number(str(r.evalf())) and self.check_number(str(i.evalf())) and (type(r) not in self.ignore_types or type(i) not in self.ignore_types):  # type: ignore
@@ -131,7 +131,7 @@ class OutputDecimal(CalculatorPlugin):
             d = str(output.evalf()) if isinstance(output, sympy.core.evalf.EvalfMixin) else str(output)
             if self.check_number(str(d)) and d != self.last_result:
                 should_print = True
-                if "is_complex" in output.__dir__() and output.is_complex:
+                if "is_complex" in output.__dir__() and getattr(output, "is_complex"):
                     r = sympy.re(output)
                     i = sympy.im(output)
                     if not (self.check_number(str(r.evalf())) and self.check_number(str(i.evalf())) and (self.check_type(r) or self.check_type(i))):  # type: ignore

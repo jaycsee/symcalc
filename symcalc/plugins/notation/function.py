@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import ast
 import code
+import inspect
 from typing import Any
+
+import sympy
 
 from ...calc import Calculator
 from ...command import CalculatorCommand
@@ -14,13 +17,12 @@ class NotationFunction(CalculatorPlugin):
 
     .. code-block::
 
-        Calculator >>> f(x)=2x+2
+        Calculator >>> f(x)=2*x+2
         Calculator >>> print(g(x):=exp(x)+2*x+1)
         MathFunction((x) -> exp(x) + 2 * x + 1)
         Calculator >>> f(g(x))
                  x
         4⋅x + 2⋅ℯ  + 4
-        Result stored in out[2]
         Calculator >>> diff(g)
          x
         ℯ  + 2
@@ -48,11 +50,66 @@ class NotationFunction(CalculatorPlugin):
         def _sympy_(self):
             return self.expr
 
-        def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        def __call__(self, *args: tuple, **kwargs: tuple) -> Any:
+            arg_spec = inspect.getargspec(self.func)
+            if len(args) == len(arg_spec.args) != 0:
+                compose = True
+                nargs = None
+                for a in args:
+                    if not isinstance(a, NotationFunction.MathFunction | sympy.FunctionClass):
+                        compose = False
+                        break
+                    if isinstance(a, NotationFunction.MathFunction):
+                        if nargs is None:
+                            nargs = len(inspect.getargspec(a.func).args)
+                        else:
+                            if len(inspect.getargspec(a.func).args) != nargs:
+                                raise ValueError(f"Cannot compose multiple multivariable MathFunctions with differing number of parameters, got {len(inspect.getargspec(a.func).args)} and expected {nargs}")
+                if compose:
+                    return NotationFunction.ComposedMathFunction(self, args, nargs)  # type: ignore
             return self.func(*args, **kwargs)
+
+        def __getattr__(self, name):
+            try:
+                return getattr(self.expr, name)
+            except AttributeError:
+                return super().__getattribute__(name)
+
+        def __pow__(self, other) -> NotationFunction.ComposedMathFunction:
+            if other == -1:
+                raise NotImplementedError("Inverse function not implemented")
+            return NotationFunction.ComposedMathFunction(NotationFunction.MathFunction("(x)", sympy.Symbol("x") ** other, f"x**{other}", lambda x: x**other), [self], len(inspect.getargspec(self.func).args))
 
         def __repr__(self) -> str:
             return f"MathFunction({self.args} -> {self.expr_str})"
+
+    class ComposedMathFunction(MathFunction):
+        """A function representing composed MathFunctions"""
+
+        def __init__(self, f: NotationFunction.MathFunction, args: list[NotationFunction.MathFunction | sympy.FunctionClass], args_func_narg: int | None) -> None:
+            if args_func_narg is None:
+                args_symbols = [sympy.Symbol(f"arg{i+1}") for i in range(10)]
+            elif args_func_narg == 1:
+                args_symbols = [sympy.Symbol(x) for x in inspect.getargspec(f.func).args]
+            else:
+                args_symbols = [sympy.Symbol(f"arg{i+1}") for i in range(args_func_narg)]
+
+            if args_func_narg is None:
+                self.args = f"(*args)"
+            else:
+                self.args = f"({', '.join([str(x) for x in args_symbols])})"
+            self.expr = f.func(*[x(*args_symbols) if args_func_narg is not None else x(*args_symbols[: len(inspect.getfullargspec(x).args)]) for x in args])  # type: ignore
+            self.expr_str = f"f({', '.join([f'func{i+1}{self.args}' for i in range(len(args))])})"
+
+            self.func = f
+            self.invoke_args = args
+
+        def __call__(self, *args: tuple, **kwargs: tuple) -> Any:
+            return self.func(*[x(*args, **kwargs) for x in self.invoke_args])
+
+        def __repr__(self) -> str:
+            newline_tab = "\n\t"
+            return f"ComposedMathFunction({self.args} -> {self.expr_str}), where{newline_tab}f is {self.func!r}{newline_tab}{newline_tab.join([f'func{i+1} is {x!r}' for i,x in enumerate(self.invoke_args)])}"
 
     class CheckNames(ast.NodeTransformer):
         """Checks the names of all the nodes in the ast to look for references to the function tags"""
@@ -84,6 +141,13 @@ class NotationFunction(CalculatorPlugin):
             node.value = ast.Call(ast.Name(id="MathFunction", ctx=ast.Load()), [ast.Constant(f"({stored[1]})"), node.value, ast.Constant(ast.unparse(node.value)), ast.parse(f"lambda {stored[1]}:{ast.unparse(node.value)}")], [])
             return self.generic_visit(node)
 
+    class FunctionDefinitionException(Exception):
+        """Invalid function definition"""
+
+        def __init__(self, msg, *args) -> None:
+            self.msg = msg
+            super().__init__(msg, *args)
+
     def __init__(self):
         super().__init__(self.__class__.__name__, 70)
         self.functions = {}
@@ -104,35 +168,44 @@ class NotationFunction(CalculatorPlugin):
         if exc.lineno is None or exc.end_lineno is None or exc.offset is None or exc.end_offset is None:
             return
         # This function does not work with multiline commands within the function call
-        if exc.msg.startswith("cannot assign to function call here.") or exc.msg == "cannot use assignment expressions with function call":
-            placeholder = self.found_function(lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1])
-            if placeholder is None:
-                return
-            lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset - 1] + placeholder + lines[exc.lineno - 1][exc.end_offset - 1 :]
-            command.command = "\n".join(lines)
-            command.resend_command = True
-        if exc.msg == "invalid syntax" and lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1] == ":=":
-            c = lines[exc.lineno - 1][: exc.offset - 1] + lines[exc.lineno - 1][exc.offset :]
-            t = lines[: exc.lineno - 1] + [c] + lines[exc.lineno :]
-            try:
-                code.compile_command("\n".join(t))
-            except SyntaxError as e:
-                if e.msg == 'expression cannot contain assignment, perhaps you meant "=="?' and e.offset is not None and e.end_offset is not None:
-                    placeholder = self.found_function(c[e.offset - 1 : e.end_offset - 2])
-                    if placeholder is None:
-                        return
-                    c = c[: e.offset - 1] + placeholder + ":=" + lines[exc.lineno - 1][exc.offset + 1 :]
-                    command.command = "\n".join(lines[: exc.lineno - 1] + [c] + lines[exc.lineno :])
-                    command.resend_command = True
+        try:
+            if exc.msg.startswith("cannot assign to function call here.") or exc.msg == "cannot use assignment expressions with function call":
+                placeholder = self.found_function(lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1])
+                if placeholder is None:
+                    return
+                lines[exc.lineno - 1] = lines[exc.lineno - 1][: exc.offset - 1] + placeholder + lines[exc.lineno - 1][exc.end_offset - 1 :]
+                command.command = "\n".join(lines)
+                command.resend_command = True
+            if exc.msg == "invalid syntax" and lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1] == ":=":
+                c = lines[exc.lineno - 1][: exc.offset - 1] + lines[exc.lineno - 1][exc.offset :]
+                t = lines[: exc.lineno - 1] + [c] + lines[exc.lineno :]
+                try:
+                    code.compile_command("\n".join(t))
+                except SyntaxError as e:
+                    if e.msg == 'expression cannot contain assignment, perhaps you meant "=="?' and e.offset is not None and e.end_offset is not None:
+                        placeholder = self.found_function(c[e.offset - 1 : e.end_offset - 2])
+                        if placeholder is None:
+                            return
+                        c = c[: e.offset - 1] + placeholder + ":=" + lines[exc.lineno - 1][exc.offset + 1 :]
+                        command.command = "\n".join(lines[: exc.lineno - 1] + [c] + lines[exc.lineno :])
+                        command.resend_command = True
+        except NotationFunction.FunctionDefinitionException as e:
+            print(f"FunctionDefinitionException: {e.msg}")
+            command.print_error = False
+            command.abort = True
 
     def found_function(self, call_str: str) -> str | None:
         placeholder = f"__func{len(self.functions) + 1}__"
         stmt = ast.parse(call_str, "interactive").body[0]
         if not (isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call) and isinstance(stmt.value.func, ast.Name)):
             return None
+        args: set[str] = set()
         for arg in stmt.value.args:
             if not isinstance(arg, ast.Name):
                 return None
+            if arg.id in args:
+                raise NotationFunction.FunctionDefinitionException(f"duplicate argument '{arg.id}' in function definition")
+            args.add(arg.id)
         self.functions[placeholder] = (stmt.value.func.id, ",".join([ast.unparse(x) for x in stmt.value.args]))
         return placeholder
 

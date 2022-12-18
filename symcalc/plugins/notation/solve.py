@@ -136,6 +136,5 @@ class NotationSolve(CalculatorPlugin):
             new_ast = ast.fix_missing_locations(self.transform3.visit(new_ast))
             new_ast = ast.fix_missing_locations(self.transform4.visit(new_ast))
         except ValueError as e:
-            print(f"ERROR: {e}")
             command.abort = True
         command.command_ast = new_ast

@@ -10,7 +10,7 @@ from ...plugin import CalculatorPlugin
 
 
 class NotationFunction(CalculatorPlugin):
-    """Calculator plugin to allow for natural function notation
+    """Calculator plugin to allow for natural math function notation
 
     .. code-block::
 
@@ -29,7 +29,10 @@ class NotationFunction(CalculatorPlugin):
         The special variable ``_`` does not work with the function definitions.
 
     .. note::
-        This syntax only works for top level variables. This will not parse functions for attributes.
+        This syntax only works for top level functions. This will not parse functions for attributes.
+
+    .. note::
+        This syntax evaluates an expression with SymPy symbols at definition time; all operations must be valid with arguments defined SymPy symbols.
 
     """
 
@@ -58,19 +61,23 @@ class NotationFunction(CalculatorPlugin):
             self.plugin = plugin
 
         def visit_Assign(self, node: ast.Assign) -> ast.AST | None:
-            index = None
+            names: list[ast.Name] = []
+            indexes: list[int] = []
             for i, name in enumerate(node.targets):
-                if name.id in self.plugin.functions:
-                    index = i
-            if index is None:
+                if isinstance(name, ast.Name) and name.id in self.plugin.functions:
+                    names.append(name)
+                    indexes.append(i)
+            if not indexes or not names:
                 return self.generic_visit(node)
-            stored = self.plugin.functions[name.id]
-            node.targets[index] = ast.Name(id=stored[0], ctx=ast.Load())
+            stored = self.plugin.functions[names[0].id]
+            for index, name in zip(indexes, names):
+                stored = self.plugin.functions[name.id]
+                node.targets[index] = ast.Name(id=stored[0], ctx=ast.Load())
             node.value = ast.Call(ast.Name(id="MathFunction", ctx=ast.Load()), [ast.Constant(f"({stored[1]})"), node.value, ast.Constant(ast.unparse(node.value)), ast.parse(f"lambda {stored[1]}:{ast.unparse(node.value)}")], [])
             return self.generic_visit(node)
 
         def visit_NamedExpr(self, node: ast.NamedExpr) -> ast.AST | None:
-            if node.target.id not in self.plugin.functions:
+            if not isinstance(node.target, ast.Name) or node.target.id not in self.plugin.functions:
                 return self.generic_visit(node)
             stored = self.plugin.functions[node.target.id]
             node.target = ast.Name(id=stored[0], ctx=ast.Load())
@@ -85,7 +92,7 @@ class NotationFunction(CalculatorPlugin):
         # Register the toggles for this plugin
         self.register_toggle(calc, "nf", "notation_function", True)
         self.checker = NotationFunction.CheckNames(self)
-        calc.context.MathFunction = self.MathFunction
+        setattr(calc.context, "MathFunction", self.MathFunction)
 
     @CalculatorPlugin.if_enabled
     def parse_command(self, command: CalculatorCommand) -> None:
@@ -94,6 +101,8 @@ class NotationFunction(CalculatorPlugin):
     @CalculatorPlugin.if_enabled
     def handle_syntax_error_obj(self, command: CalculatorCommand, exc: SyntaxError) -> None:
         lines = command.command.split("\n")
+        if exc.lineno is None or exc.end_lineno is None or exc.offset is None or exc.end_offset is None:
+            return
         # This function does not work with multiline commands within the function call
         if exc.msg.startswith("cannot assign to function call here.") or exc.msg == "cannot use assignment expressions with function call":
             placeholder = self.found_function(lines[exc.lineno - 1][exc.offset - 1 : exc.end_offset - 1])
@@ -108,7 +117,7 @@ class NotationFunction(CalculatorPlugin):
             try:
                 code.compile_command("\n".join(t))
             except SyntaxError as e:
-                if e.msg == 'expression cannot contain assignment, perhaps you meant "=="?':
+                if e.msg == 'expression cannot contain assignment, perhaps you meant "=="?' and e.offset is not None and e.end_offset is not None:
                     placeholder = self.found_function(c[e.offset - 1 : e.end_offset - 2])
                     if placeholder is None:
                         return
@@ -118,13 +127,13 @@ class NotationFunction(CalculatorPlugin):
 
     def found_function(self, call_str: str) -> str | None:
         placeholder = f"__func{len(self.functions) + 1}__"
-        call = ast.parse(call_str, "interactive").body[0].value
-        if not isinstance(call.func, ast.Name):
+        stmt = ast.parse(call_str, "interactive").body[0]
+        if not (isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call) and isinstance(stmt.value.func, ast.Name)):
             return None
-        for arg in call.args:
+        for arg in stmt.value.args:
             if not isinstance(arg, ast.Name):
                 return None
-        self.functions[placeholder] = (call.func.id, ast.unparse(call.args))
+        self.functions[placeholder] = (stmt.value.func.id, ",".join([ast.unparse(x) for x in stmt.value.args]))
         return placeholder
 
     @CalculatorPlugin.if_enabled

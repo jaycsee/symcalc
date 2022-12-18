@@ -5,7 +5,6 @@ import traceback
 from collections import defaultdict
 from typing import Any, Callable, NoReturn
 
-# from sympy import *
 import sympy
 
 

@@ -3,9 +3,9 @@ from __future__ import annotations
 import ast
 import copy
 
-from symcalc.calc import Calculator
-from symcalc.command import CalculatorCommand
-from symcalc.plugin import CalculatorPlugin
+from ...calc import Calculator
+from ...command import CalculatorCommand
+from ...plugin import CalculatorPlugin
 
 
 class NotationSolve(CalculatorPlugin):

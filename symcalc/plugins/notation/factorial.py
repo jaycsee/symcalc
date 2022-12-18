@@ -22,8 +22,6 @@ class NotationFactorial(CalculatorPlugin):
         ⎝10⎠
         Calculator >>> -5!
         -120
-
-    .. note:: This plugin was designed with NotationMultiply dependency. Undesired errors may occur if NotationMultiply is disabled.
     """
 
     class CheckSubscripts(ast.NodeTransformer):
