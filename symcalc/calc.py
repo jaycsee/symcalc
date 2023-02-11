@@ -62,6 +62,7 @@ class Calculator:
         -------
         None
         """
+        assert self.current_command is not None
         if self.strict_python:
             print(data, end="")
             return
